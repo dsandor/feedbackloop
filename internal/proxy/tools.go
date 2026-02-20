@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -133,12 +134,24 @@ func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSess
 		duration := time.Since(start)
 
 		if err != nil {
-			// Log error response with timing
-			tc.logger.LogErrorOutbound("tool_call_error", correlationID, map[string]interface{}{
-				"tool":        req.Params.Name,
-				"error":       err.Error(),
-				"duration_ns": duration.Nanoseconds(),
-			})
+			// Detect different error types for better logging
+			if errors.Is(err, context.Canceled) {
+				tc.logger.LogErrorOutbound("tool_call_cancelled", correlationID, map[string]interface{}{
+					"tool":        req.Params.Name,
+					"duration_ns": duration.Nanoseconds(),
+				})
+			} else if errors.Is(err, context.DeadlineExceeded) {
+				tc.logger.LogErrorOutbound("tool_call_timeout", correlationID, map[string]interface{}{
+					"tool":        req.Params.Name,
+					"duration_ns": duration.Nanoseconds(),
+				})
+			} else {
+				tc.logger.LogErrorOutbound("tool_call_error", correlationID, map[string]interface{}{
+					"tool":        req.Params.Name,
+					"error":       err.Error(),
+					"duration_ns": duration.Nanoseconds(),
+				})
+			}
 			return nil, err
 		}
 
