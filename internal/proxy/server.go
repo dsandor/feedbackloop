@@ -43,7 +43,7 @@ func NewProxyServer(upstream *UpstreamManager, log *logger.Logger) (*ProxyServer
 
 	// Register all tools with proxy server
 	for _, tool := range toolCache.GetTools() {
-		server.AddTool(tool, toolCache.CreateStubHandler(tool.Name))
+		server.AddTool(tool, toolCache.CreateProxyHandler(tool.Name, upstream.Session()))
 
 		correlationID := logger.GenerateCorrelationID()
 		log.LogEvent("tool_registered", correlationID, map[string]interface{}{
