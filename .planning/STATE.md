@@ -3,7 +3,7 @@
 ## Current Status
 
 **Active Milestone:** Milestone 1: Transparent MCP Proxy v1
-**Current Phase:** Phase 1 Complete - Ready for Phase 2
+**Current Phase:** Phase 2 - Planned, Ready for Execution
 **Last Updated:** 2026-02-20
 
 ---
@@ -20,8 +20,8 @@
 
 ### Phase 2: Tool Discovery & Re-exposure
 **Status:** 🔲 Not Started
-**Plan:** Not created
-**Progress:** 0/0 tasks complete
+**Plan:** `.planning/phases/02-tool-discovery-re-exposure/2-PLAN.md`
+**Progress:** 0/7 tasks complete
 
 ### Phase 3: Transparent Tool Call Proxying
 **Status:** 🔲 Not Started
