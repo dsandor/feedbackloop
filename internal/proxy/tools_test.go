@@ -203,20 +203,73 @@ func TestToolCacheThreadSafety(t *testing.T) {
 	}
 }
 
-func TestStubHandler(t *testing.T) {
+func TestProxyHandlerCreation(t *testing.T) {
 	log := logger.New()
 	cache := NewToolCache(log)
 
-	// Create stub handler
-	handler := cache.CreateStubHandler("test-tool")
+	// Create proxy handler (session can be nil for this test - we're just testing creation)
+	handler := cache.CreateProxyHandler("test-tool", nil)
 
 	// Verify handler is not nil
 	if handler == nil {
-		t.Error("CreateStubHandler returned nil")
+		t.Error("CreateProxyHandler returned nil")
 	}
 
-	// Note: Full integration testing of stub handler is done in integration tests
-	// since it requires proper MCP SDK request structures
+	// Note: Full integration testing of proxy handler is done in integration tests
+	// since it requires proper MCP SDK request/response structures and active session
+}
+
+func TestGetArgumentKeys(t *testing.T) {
+	tests := []struct {
+		name     string
+		args     map[string]interface{}
+		expected int
+	}{
+		{
+			name:     "empty arguments",
+			args:     map[string]interface{}{},
+			expected: 0,
+		},
+		{
+			name: "single argument",
+			args: map[string]interface{}{
+				"url": "https://example.com",
+			},
+			expected: 1,
+		},
+		{
+			name: "multiple arguments",
+			args: map[string]interface{}{
+				"url":     "https://example.com",
+				"timeout": 5000,
+				"method":  "GET",
+			},
+			expected: 3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			keys := getArgumentKeys(tt.args)
+			if len(keys) != tt.expected {
+				t.Errorf("expected %d keys, got %d", tt.expected, len(keys))
+			}
+
+			// Verify all expected keys are present
+			for key := range tt.args {
+				found := false
+				for _, k := range keys {
+					if k == key {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Errorf("expected key %s not found in result", key)
+				}
+			}
+		})
+	}
 }
 
 func TestGetToolNotFound(t *testing.T) {
