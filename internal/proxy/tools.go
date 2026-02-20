@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -86,21 +87,53 @@ func (tc *ToolCache) GetTool(name string) (*mcp.Tool, bool) {
 	return tool, ok
 }
 
-// CreateStubHandler creates a stub handler for a tool (Phase 3 will implement actual proxying)
-func (tc *ToolCache) CreateStubHandler(toolName string) mcp.ToolHandler {
+// CreateProxyHandler creates a handler that proxies tool calls to upstream server
+func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSession) mcp.ToolHandler {
 	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		correlationID := logger.GenerateCorrelationID()
 
+		// Unmarshal arguments from raw JSON
+		var arguments map[string]interface{}
+		if len(req.Params.Arguments) > 0 {
+			if err := json.Unmarshal(req.Params.Arguments, &arguments); err != nil {
+				tc.logger.LogErrorEvent("tool_call_unmarshal_failed", correlationID, map[string]interface{}{
+					"tool":  req.Params.Name,
+					"error": err.Error(),
+				})
+				return nil, fmt.Errorf("failed to unmarshal arguments: %w", err)
+			}
+		}
+
+		// Log inbound request
 		tc.logger.LogInbound("tool_call_request", correlationID, map[string]interface{}{
-			"tool":   toolName,
-			"params": req.Params.Arguments,
+			"tool":      req.Params.Name,
+			"arguments": arguments,
 		})
 
-		tc.logger.LogErrorEvent("tool_call_not_implemented", correlationID, map[string]interface{}{
-			"tool":    toolName,
-			"message": "tool call proxying not implemented yet (Phase 3)",
+		// Create params for upstream call
+		params := &mcp.CallToolParams{
+			Name:      req.Params.Name,
+			Arguments: arguments,
+		}
+
+		// Call upstream tool
+		result, err := session.CallTool(ctx, params)
+
+		if err != nil {
+			// Log error response
+			tc.logger.LogErrorOutbound("tool_call_error", correlationID, map[string]interface{}{
+				"tool":  req.Params.Name,
+				"error": err.Error(),
+			})
+			return nil, err
+		}
+
+		// Log successful response
+		tc.logger.LogOutbound("tool_call_response", correlationID, map[string]interface{}{
+			"tool":    req.Params.Name,
+			"isError": result.IsError,
 		})
 
-		return nil, fmt.Errorf("tool call proxying not implemented yet (Phase 3)")
+		return result, nil
 	}
 }
