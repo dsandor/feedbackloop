@@ -85,3 +85,22 @@ func (tc *ToolCache) GetTool(name string) (*mcp.Tool, bool) {
 	tool, ok := tc.tools[name]
 	return tool, ok
 }
+
+// CreateStubHandler creates a stub handler for a tool (Phase 3 will implement actual proxying)
+func (tc *ToolCache) CreateStubHandler(toolName string) mcp.ToolHandler {
+	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		correlationID := logger.GenerateCorrelationID()
+
+		tc.logger.LogInbound("tool_call_request", correlationID, map[string]interface{}{
+			"tool":   toolName,
+			"params": req.Params.Arguments,
+		})
+
+		tc.logger.LogErrorEvent("tool_call_not_implemented", correlationID, map[string]interface{}{
+			"tool":    toolName,
+			"message": "tool call proxying not implemented yet (Phase 3)",
+		})
+
+		return nil, fmt.Errorf("tool call proxying not implemented yet (Phase 3)")
+	}
+}
