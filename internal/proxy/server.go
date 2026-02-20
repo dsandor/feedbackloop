@@ -98,3 +98,9 @@ func (ps *ProxyServer) Run(ctx context.Context, transport mcp.Transport) error {
 
 	return nil
 }
+
+// GetServer returns the underlying MCP server for transport integration.
+// This is used by HTTP/SSE transport handlers to connect to the server.
+func (ps *ProxyServer) GetServer() *mcp.Server {
+	return ps.server
+}
