@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/dsandor/feedbackloop/internal/logger"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
@@ -87,10 +88,20 @@ func (tc *ToolCache) GetTool(name string) (*mcp.Tool, bool) {
 	return tool, ok
 }
 
+// getArgumentKeys returns a list of argument keys from a map
+func getArgumentKeys(args map[string]interface{}) []string {
+	keys := make([]string, 0, len(args))
+	for k := range args {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // CreateProxyHandler creates a handler that proxies tool calls to upstream server
 func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSession) mcp.ToolHandler {
 	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		correlationID := logger.GenerateCorrelationID()
+		start := time.Now()
 
 		// Unmarshal arguments from raw JSON
 		var arguments map[string]interface{}
@@ -104,10 +115,11 @@ func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSess
 			}
 		}
 
-		// Log inbound request
+		// Log inbound request with enhanced details
 		tc.logger.LogInbound("tool_call_request", correlationID, map[string]interface{}{
-			"tool":      req.Params.Name,
-			"arguments": arguments,
+			"tool":           req.Params.Name,
+			"argument_keys":  getArgumentKeys(arguments),
+			"argument_count": len(arguments),
 		})
 
 		// Create params for upstream call
@@ -118,20 +130,24 @@ func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSess
 
 		// Call upstream tool
 		result, err := session.CallTool(ctx, params)
+		duration := time.Since(start)
 
 		if err != nil {
-			// Log error response
+			// Log error response with timing
 			tc.logger.LogErrorOutbound("tool_call_error", correlationID, map[string]interface{}{
-				"tool":  req.Params.Name,
-				"error": err.Error(),
+				"tool":        req.Params.Name,
+				"error":       err.Error(),
+				"duration_ns": duration.Nanoseconds(),
 			})
 			return nil, err
 		}
 
-		// Log successful response
+		// Log successful response with enhanced details
 		tc.logger.LogOutbound("tool_call_response", correlationID, map[string]interface{}{
-			"tool":    req.Params.Name,
-			"isError": result.IsError,
+			"tool":          req.Params.Name,
+			"isError":       result.IsError,
+			"content_count": len(result.Content),
+			"duration_ns":   duration.Nanoseconds(),
 		})
 
 		return result, nil
