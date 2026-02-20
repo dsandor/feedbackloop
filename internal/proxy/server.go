@@ -13,29 +13,50 @@ import (
 
 // ProxyServer is the client-facing MCP server that proxies to upstream
 type ProxyServer struct {
-	server   *mcp.Server
-	upstream *UpstreamManager
-	logger   *logger.Logger
+	server    *mcp.Server
+	upstream  *UpstreamManager
+	logger    *logger.Logger
+	toolCache *ToolCache
 }
 
-// NewProxyServer creates a new proxy server
-func NewProxyServer(upstream *UpstreamManager, logger *logger.Logger) *ProxyServer {
+// NewProxyServer creates a new proxy server with tool discovery
+func NewProxyServer(upstream *UpstreamManager, log *logger.Logger) (*ProxyServer, error) {
 	impl := &mcp.Implementation{
 		Name:    "feedbackloop",
 		Version: "0.1.0",
 	}
 
-	// For now, we'll use minimal server options
-	// In Phase 2, we'll add tool discovery and proxying
 	serverOptions := &mcp.ServerOptions{}
-
 	server := mcp.NewServer(impl, serverOptions)
 
-	return &ProxyServer{
-		server:   server,
-		upstream: upstream,
-		logger:   logger,
+	// Create tool cache
+	toolCache := NewToolCache(log)
+
+	// Discover tools from upstream
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := toolCache.DiscoverTools(ctx, upstream.Session())
+	if err != nil {
+		return nil, fmt.Errorf("tool discovery failed: %w", err)
 	}
+
+	// Register all tools with proxy server
+	for _, tool := range toolCache.GetTools() {
+		server.AddTool(tool, toolCache.CreateStubHandler(tool.Name))
+
+		correlationID := logger.GenerateCorrelationID()
+		log.LogEvent("tool_registered", correlationID, map[string]interface{}{
+			"tool": tool.Name,
+		})
+	}
+
+	return &ProxyServer{
+		server:    server,
+		upstream:  upstream,
+		logger:    log,
+		toolCache: toolCache,
+	}, nil
 }
 
 // Run starts the proxy server on the given transport (blocks until client disconnects)
