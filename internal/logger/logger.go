@@ -34,7 +34,7 @@ type LogEntry struct {
 	Message       interface{} `json:"message"`
 }
 
-// Logger handles structured JSON logging to stdout
+// Logger handles structured JSON logging to stderr
 type Logger struct {
 	encoder *json.Encoder
 	mu      sync.Mutex
@@ -42,13 +42,13 @@ type Logger struct {
 
 // New creates a new Logger instance
 func New() *Logger {
-	encoder := json.NewEncoder(os.Stdout)
+	encoder := json.NewEncoder(os.Stderr)
 	return &Logger{
 		encoder: encoder,
 	}
 }
 
-// Log writes a log entry as a JSON line to stdout
+// Log writes a log entry as a JSON line to stderr
 func (l *Logger) Log(level LogLevel, eventType string, correlationID string, direction Direction, message interface{}) {
 	entry := LogEntry{
 		Timestamp:     time.Now().UTC().Format(time.RFC3339Nano),
