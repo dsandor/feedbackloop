@@ -2,7 +2,9 @@ package proxy
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/dsandor/feedbackloop/internal/logger"
@@ -48,6 +50,21 @@ func (ps *ProxyServer) Run(ctx context.Context, transport mcp.Transport) error {
 	err := ps.server.Run(ctx, transport)
 
 	if err != nil {
+		// Distinguish between different error types
+		if errors.Is(err, io.EOF) {
+			ps.logger.LogEvent("server_stopped", correlationID, map[string]interface{}{
+				"reason": "client_disconnected",
+			})
+			return nil
+		}
+
+		if errors.Is(err, context.Canceled) {
+			ps.logger.LogEvent("server_stopped", correlationID, map[string]interface{}{
+				"reason": "context_cancelled",
+			})
+			return nil
+		}
+
 		ps.logger.LogErrorEvent("server_stopped_with_error", correlationID, map[string]interface{}{
 			"error": err.Error(),
 		})
@@ -55,7 +72,7 @@ func (ps *ProxyServer) Run(ctx context.Context, transport mcp.Transport) error {
 	}
 
 	ps.logger.LogEvent("server_stopped", correlationID, map[string]interface{}{
-		"reason": "client_disconnected",
+		"reason": "clean_shutdown",
 	})
 
 	return nil

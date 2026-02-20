@@ -82,6 +82,35 @@ func (um *UpstreamManager) Session() *mcp.ClientSession {
 	return um.session
 }
 
+// Wait waits for the upstream session to terminate
+// Returns error if upstream crashes or exits unexpectedly
+func (um *UpstreamManager) Wait() error {
+	if um.session == nil {
+		return fmt.Errorf("no active session")
+	}
+
+	correlationID := fmt.Sprintf("upstream-wait-%d", time.Now().UnixNano())
+
+	um.logger.LogEvent("upstream_waiting", correlationID, map[string]interface{}{
+		"session_id": um.session.ID(),
+	})
+
+	err := um.session.Wait()
+	if err != nil {
+		um.logger.LogErrorEvent("upstream_terminated_with_error", correlationID, map[string]interface{}{
+			"error":      err.Error(),
+			"session_id": um.session.ID(),
+		})
+		return fmt.Errorf("upstream session terminated: %w", err)
+	}
+
+	um.logger.LogEvent("upstream_terminated", correlationID, map[string]interface{}{
+		"session_id": um.session.ID(),
+	})
+
+	return nil
+}
+
 // Close terminates the upstream connection
 func (um *UpstreamManager) Close() error {
 	if um.session == nil {

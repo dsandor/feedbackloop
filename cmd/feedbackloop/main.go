@@ -16,6 +16,11 @@ func main() {
 	// Exit code to return
 	exitCode := 0
 	defer func() {
+		// Recover from panics and log them
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "PANIC: %v\n", r)
+			exitCode = 2
+		}
 		os.Exit(exitCode)
 	}()
 
