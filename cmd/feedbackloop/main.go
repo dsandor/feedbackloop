@@ -65,7 +65,14 @@ func main() {
 	}()
 
 	// Create proxy server
-	proxyServer := proxy.NewProxyServer(upstream, log)
+	proxyServer, err := proxy.NewProxyServer(upstream, log)
+	if err != nil {
+		log.LogErrorEvent("server_creation_failed", "main", map[string]interface{}{
+			"error": err.Error(),
+		})
+		exitCode = 1
+		return
+	}
 
 	// Create stdio transport for client communication
 	transport := &mcp.StdioTransport{}
