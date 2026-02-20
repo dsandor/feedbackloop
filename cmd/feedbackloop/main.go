@@ -88,42 +88,51 @@ func main() {
 		}
 	}()
 
-	// Create proxy server
-	proxyServer, err := proxy.NewProxyServer(upstream, log)
-	if err != nil {
-		log.LogErrorEvent("server_creation_failed", "main", map[string]interface{}{
-			"error": err.Error(),
-		})
-		exitCode = 1
-		return
-	}
-
-	// Create stdio transport for client communication
-	transport := &mcp.StdioTransport{}
-
-	log.LogEvent("ready_for_client", "main", map[string]interface{}{
-		"transport": "stdio",
+	// Log selected transport mode
+	log.LogEvent("transport_mode_selected", "main", map[string]interface{}{
+		"transport": *transport,
 	})
 
-	// Run the proxy server (blocks until client disconnects or context cancelled)
-	if err := proxyServer.Run(ctx, transport); err != nil {
-		// Check if error is due to context cancellation (graceful shutdown)
-		if ctx.Err() != nil {
-			log.LogEvent("shutdown_complete", "main", map[string]interface{}{
-				"reason": "signal",
-			})
-		} else {
-			log.LogErrorEvent("runtime_error", "main", map[string]interface{}{
+	// Route to appropriate transport
+	switch *transport {
+	case "stdio":
+		if err := runStdioMode(ctx, upstream, log); err != nil {
+			log.LogErrorEvent("stdio_mode_error", "main", map[string]interface{}{
 				"error": err.Error(),
 			})
 			exitCode = 1
 		}
-		return
+	case "http":
+		if err := runHTTPMode(ctx, upstream, log, *httpHost, *httpPort); err != nil {
+			log.LogErrorEvent("http_mode_error", "main", map[string]interface{}{
+				"error": err.Error(),
+			})
+			exitCode = 1
+		}
 	}
 
 	log.LogEvent("shutdown_complete", "main", map[string]interface{}{
-		"reason": "client_disconnected",
+		"transport": *transport,
 	})
+}
+
+func runStdioMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger) error {
+	// Create proxy server
+	proxyServer, err := proxy.NewProxyServer(upstream, log)
+	if err != nil {
+		return fmt.Errorf("proxy server creation failed: %w", err)
+	}
+
+	// Create stdio transport
+	stdioTransport := &mcp.StdioTransport{}
+
+	log.LogEvent("ready_for_client", "stdio_mode", map[string]interface{}{
+		"transport":      "stdio",
+		"transport_type": "stdio",
+	})
+
+	// Run server
+	return proxyServer.Run(ctx, stdioTransport)
 }
 
 func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger, host string, port int) error {
@@ -152,7 +161,8 @@ func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logg
 	serverErr := make(chan error, 1)
 	go func() {
 		log.LogEvent("http_server_starting", "http_server", map[string]interface{}{
-			"address": addr,
+			"address":        addr,
+			"transport_type": "http",
 		})
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			serverErr <- err
