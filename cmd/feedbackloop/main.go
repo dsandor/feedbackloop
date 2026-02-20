@@ -4,9 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/dsandor/feedbackloop/internal/logger"
 	"github.com/dsandor/feedbackloop/internal/proxy"
@@ -122,4 +124,64 @@ func main() {
 	log.LogEvent("shutdown_complete", "main", map[string]interface{}{
 		"reason": "client_disconnected",
 	})
+}
+
+func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger, host string, port int) error {
+	// Create SSE handler with getServer function
+	sseHandler := mcp.NewSSEHandler(func(req *http.Request) *mcp.Server {
+		// For now, create a new proxy server per request
+		// (Alternative: reuse singleton ProxyServer if thread-safe)
+		proxyServer, err := proxy.NewProxyServer(upstream, log)
+		if err != nil {
+			log.LogErrorEvent("proxy_server_creation_failed", "http_server", map[string]interface{}{
+				"error": err.Error(),
+			})
+			return nil
+		}
+		return proxyServer.GetServer()
+	}, &mcp.SSEOptions{})
+
+	// Create HTTP server
+	addr := fmt.Sprintf("%s:%d", host, port)
+	httpServer := &http.Server{
+		Addr:    addr,
+		Handler: sseHandler,
+	}
+
+	// Start server in goroutine
+	serverErr := make(chan error, 1)
+	go func() {
+		log.LogEvent("http_server_starting", "http_server", map[string]interface{}{
+			"address": addr,
+		})
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErr <- err
+		}
+	}()
+
+	// Wait for shutdown signal or server error
+	select {
+	case <-ctx.Done():
+		// Graceful shutdown
+		log.LogEvent("http_server_shutting_down", "http_server", map[string]interface{}{
+			"reason": "signal",
+		})
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			log.LogErrorEvent("http_server_shutdown_error", "http_server", map[string]interface{}{
+				"error": err.Error(),
+			})
+			return err
+		}
+		log.LogEvent("http_server_stopped", "http_server", map[string]interface{}{
+			"reason": "graceful_shutdown",
+		})
+		return nil
+	case err := <-serverErr:
+		log.LogErrorEvent("http_server_error", "http_server", map[string]interface{}{
+			"error": err.Error(),
+		})
+		return err
+	}
 }
