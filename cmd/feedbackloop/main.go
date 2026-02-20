@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -12,7 +13,15 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
+var (
+	transport = flag.String("transport", "stdio", "Transport type: stdio or http")
+	httpHost  = flag.String("http-host", "localhost", "HTTP server host (http mode only)")
+	httpPort  = flag.Int("http-port", 3000, "HTTP server port (http mode only)")
+)
+
 func main() {
+	flag.Parse()
+
 	// Exit code to return
 	exitCode := 0
 	defer func() {
@@ -37,11 +46,24 @@ func main() {
 		cancel()
 	}()
 
+	// Validate transport flag
+	if *transport != "stdio" && *transport != "http" {
+		fmt.Fprintf(os.Stderr, "ERROR: Invalid transport '%s'. Must be 'stdio' or 'http'\n", *transport)
+		os.Exit(1)
+	}
+
 	// Initialize logger
 	log := logger.New()
 
 	log.LogEvent("feedbackloop_starting", "main", map[string]interface{}{
 		"version": "0.1.0",
+	})
+
+	// Log transport configuration
+	log.LogEvent("transport_configured", "main", map[string]interface{}{
+		"transport": *transport,
+		"http_host": *httpHost,
+		"http_port": *httpPort,
 	})
 
 	// Create upstream manager for chrome-devtools-mcp
