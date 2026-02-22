@@ -1,6 +1,54 @@
 # Binaries
 feedbackloop
 test_client
+test_client_sse
 
 # Temporary test files
 test_client.go
+test_client_sse.go
+test_logging.sh
+
+# Claude AI files
+.claude/
+.planning/
+CLAUDE.md
+
+# IDE and editor directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Dependency directories
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Coverage reports
+*.coverprofile
+coverage.txt
+coverage.html
+
+# Debug files
+__debug_bin
+*.pprof
