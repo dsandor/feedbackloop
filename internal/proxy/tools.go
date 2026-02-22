@@ -53,11 +53,33 @@ func (tc *ToolCache) DiscoverTools(ctx context.Context, session *mcp.ClientSessi
 		tc.tools[tool.Name] = tool
 
 		tc.logger.LogEvent("tool_discovered", correlationID, map[string]interface{}{
-			"tool":        tool.Name,
-			"description": tool.Description,
-			"count":       len(tc.tools),
+			"tool":          tool.Name,
+			"title":         tool.Title,
+			"description":   tool.Description,
+			"input_schema":  tool.InputSchema,
+			"output_schema": tool.OutputSchema,
+			"annotations":   tool.Annotations,
+			"count":         len(tc.tools),
 		})
 	}
+
+	// Emit a catalog event with full schemas for all discovered tools
+	catalog := make([]map[string]interface{}, 0, len(result.Tools))
+	for _, tool := range result.Tools {
+		catalog = append(catalog, map[string]interface{}{
+			"name":          tool.Name,
+			"title":         tool.Title,
+			"description":   tool.Description,
+			"input_schema":  tool.InputSchema,
+			"output_schema": tool.OutputSchema,
+			"annotations":   tool.Annotations,
+		})
+	}
+	tc.logger.LogEvent("tool_catalog", correlationID, map[string]interface{}{
+		"tools":      catalog,
+		"total":      len(result.Tools),
+		"session_id": session.ID(),
+	})
 
 	tc.logger.LogEvent("tool_discovery_complete", correlationID, map[string]interface{}{
 		"total_tools": len(tc.tools),
@@ -99,7 +121,7 @@ func getArgumentKeys(args map[string]interface{}) []string {
 }
 
 // CreateProxyHandler creates a handler that proxies tool calls to upstream server
-func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSession) mcp.ToolHandler {
+func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSession, clientInfo *ClientInfo) mcp.ToolHandler {
 	return func(ctx context.Context, req *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 		correlationID := logger.GenerateCorrelationID()
 		start := time.Now()
@@ -116,11 +138,33 @@ func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSess
 			}
 		}
 
-		// Log inbound request with enhanced details
+		// Extract MCP client info from the initialization handshake
+		mcpClientMeta := map[string]interface{}{}
+		if initParams := req.Session.InitializeParams(); initParams != nil && initParams.ClientInfo != nil {
+			mcpClientMeta["name"] = initParams.ClientInfo.Name
+			mcpClientMeta["version"] = initParams.ClientInfo.Version
+			mcpClientMeta["title"] = initParams.ClientInfo.Title
+		}
+
+		// Extract HTTP headers from transport layer (populated for SSE/HTTP transports)
+		transportHeaders := map[string]string{}
+		if req.Extra != nil && req.Extra.Header != nil {
+			for key, vals := range req.Extra.Header {
+				if len(vals) > 0 {
+					transportHeaders[key] = vals[0]
+				}
+			}
+		}
+
+		// Log inbound request with full arguments, client info, and transport metadata
 		tc.logger.LogInbound("tool_call_request", correlationID, map[string]interface{}{
-			"tool":           req.Params.Name,
-			"argument_keys":  getArgumentKeys(arguments),
-			"argument_count": len(arguments),
+			"tool":               req.Params.Name,
+			"arguments":          arguments,
+			"argument_count":     len(arguments),
+			"session_id":         session.ID(),
+			"client_info":        clientInfo,
+			"mcp_client":         mcpClientMeta,
+			"transport_headers":  transportHeaders,
 		})
 
 		// Create params for upstream call
@@ -139,28 +183,35 @@ func (tc *ToolCache) CreateProxyHandler(toolName string, session *mcp.ClientSess
 				tc.logger.LogErrorOutbound("tool_call_cancelled", correlationID, map[string]interface{}{
 					"tool":        req.Params.Name,
 					"duration_ns": duration.Nanoseconds(),
+					"client_info": clientInfo,
 				})
 			} else if errors.Is(err, context.DeadlineExceeded) {
 				tc.logger.LogErrorOutbound("tool_call_timeout", correlationID, map[string]interface{}{
 					"tool":        req.Params.Name,
 					"duration_ns": duration.Nanoseconds(),
+					"client_info": clientInfo,
 				})
 			} else {
 				tc.logger.LogErrorOutbound("tool_call_error", correlationID, map[string]interface{}{
 					"tool":        req.Params.Name,
 					"error":       err.Error(),
 					"duration_ns": duration.Nanoseconds(),
+					"client_info": clientInfo,
 				})
 			}
 			return nil, err
 		}
 
-		// Log successful response with enhanced details
+		// Log successful response with full content and client info
 		tc.logger.LogOutbound("tool_call_response", correlationID, map[string]interface{}{
 			"tool":          req.Params.Name,
-			"isError":       result.IsError,
+			"is_error":      result.IsError,
 			"content_count": len(result.Content),
+			"content":       result.Content,
+			"duration_ms":   duration.Milliseconds(),
 			"duration_ns":   duration.Nanoseconds(),
+			"session_id":    session.ID(),
+			"client_info":   clientInfo,
 		})
 
 		return result, nil

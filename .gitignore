@@ -1,0 +1,6 @@
+# Binaries
+feedbackloop
+test_client
+
+# Temporary test files
+test_client.go

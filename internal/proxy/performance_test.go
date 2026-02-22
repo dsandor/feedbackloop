@@ -151,8 +151,8 @@ func TestProxyHandlerConcurrency(t *testing.T) {
 		wg.Add(1)
 		go func(idx int) {
 			defer wg.Done()
-			// Session is nil - we're just testing handler creation concurrency
-			handlers[idx] = cache.CreateProxyHandler(string(rune('a'+idx)), nil)
+			// Session and clientInfo are nil - we're just testing handler creation concurrency
+			handlers[idx] = cache.CreateProxyHandler(string(rune('a'+idx)), nil, nil)
 		}(i)
 	}
 

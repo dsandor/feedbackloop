@@ -36,15 +36,18 @@ type LogEntry struct {
 
 // Logger handles structured JSON logging to stderr
 type Logger struct {
-	encoder *json.Encoder
-	mu      sync.Mutex
+	encoder     *json.Encoder
+	mu          sync.Mutex
+	subscribers map[string]chan LogEntry
+	subMu       sync.RWMutex
 }
 
 // New creates a new Logger instance
 func New() *Logger {
 	encoder := json.NewEncoder(os.Stderr)
 	return &Logger{
-		encoder: encoder,
+		encoder:     encoder,
+		subscribers: make(map[string]chan LogEntry),
 	}
 }
 
@@ -60,12 +63,41 @@ func (l *Logger) Log(level LogLevel, eventType string, correlationID string, dir
 	}
 
 	l.mu.Lock()
-	defer l.mu.Unlock()
-
 	if err := l.encoder.Encode(entry); err != nil {
 		// Fallback to stderr if JSON encoding fails
 		fmt.Fprintf(os.Stderr, "LOGGER ERROR: failed to encode log entry: %v\n", err)
 	}
+	l.mu.Unlock()
+
+	// Broadcast to subscribers without holding l.mu
+	l.subMu.RLock()
+	for _, ch := range l.subscribers {
+		select {
+		case ch <- entry:
+		default: // drop if buffer full; never block the logger
+		}
+	}
+	l.subMu.RUnlock()
+}
+
+// Subscribe registers a new log subscriber and returns a channel that receives log entries.
+// The caller must call Unsubscribe when done to avoid resource leaks.
+func (l *Logger) Subscribe(id string) chan LogEntry {
+	ch := make(chan LogEntry, 100)
+	l.subMu.Lock()
+	l.subscribers[id] = ch
+	l.subMu.Unlock()
+	return ch
+}
+
+// Unsubscribe removes a subscriber and closes its channel.
+func (l *Logger) Unsubscribe(id string) {
+	l.subMu.Lock()
+	if ch, ok := l.subscribers[id]; ok {
+		delete(l.subscribers, id)
+		close(ch)
+	}
+	l.subMu.Unlock()
 }
 
 // Info logs an informational message

@@ -208,7 +208,7 @@ func TestProxyHandlerCreation(t *testing.T) {
 	cache := NewToolCache(log)
 
 	// Create proxy handler (session can be nil for this test - we're just testing creation)
-	handler := cache.CreateProxyHandler("test-tool", nil)
+	handler := cache.CreateProxyHandler("test-tool", nil, nil)
 
 	// Verify handler is not nil
 	if handler == nil {

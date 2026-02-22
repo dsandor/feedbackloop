@@ -13,14 +13,17 @@ import (
 
 // ProxyServer is the client-facing MCP server that proxies to upstream
 type ProxyServer struct {
-	server    *mcp.Server
-	upstream  *UpstreamManager
-	logger    *logger.Logger
-	toolCache *ToolCache
+	server     *mcp.Server
+	upstream   *UpstreamManager
+	logger     *logger.Logger
+	toolCache  *ToolCache
+	clientInfo *ClientInfo
 }
 
 // NewProxyServer creates a new proxy server with tool discovery
-func NewProxyServer(upstream *UpstreamManager, log *logger.Logger) (*ProxyServer, error) {
+func NewProxyServer(upstream *UpstreamManager, log *logger.Logger, clientInfo *ClientInfo) (*ProxyServer, error) {
+	correlationID := logger.GenerateCorrelationID()
+
 	impl := &mcp.Implementation{
 		Name:    "feedbackloop",
 		Version: "0.1.0",
@@ -43,19 +46,25 @@ func NewProxyServer(upstream *UpstreamManager, log *logger.Logger) (*ProxyServer
 
 	// Register all tools with proxy server
 	for _, tool := range toolCache.GetTools() {
-		server.AddTool(tool, toolCache.CreateProxyHandler(tool.Name, upstream.Session()))
+		server.AddTool(tool, toolCache.CreateProxyHandler(tool.Name, upstream.Session(), clientInfo))
 
-		correlationID := logger.GenerateCorrelationID()
-		log.LogEvent("tool_registered", correlationID, map[string]interface{}{
+		toolCorrelationID := logger.GenerateCorrelationID()
+		log.LogEvent("tool_registered", toolCorrelationID, map[string]interface{}{
 			"tool": tool.Name,
 		})
 	}
 
+	log.LogEvent("proxy_server_created", correlationID, map[string]interface{}{
+		"tool_count":  len(toolCache.GetTools()),
+		"client_info": clientInfo,
+	})
+
 	return &ProxyServer{
-		server:    server,
-		upstream:  upstream,
-		logger:    log,
-		toolCache: toolCache,
+		server:     server,
+		upstream:   upstream,
+		logger:     log,
+		toolCache:  toolCache,
+		clientInfo: clientInfo,
 	}, nil
 }
 

@@ -12,6 +12,8 @@ import (
 
 	"github.com/dsandor/feedbackloop/internal/logger"
 	"github.com/dsandor/feedbackloop/internal/proxy"
+	"github.com/dsandor/feedbackloop/internal/ui"
+	"github.com/dsandor/feedbackloop/internal/webui"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -56,6 +58,23 @@ func main() {
 
 	// Initialize logger
 	log := logger.New()
+
+	// Start web UI server
+	uiServer, uiErr := ui.New(log, webui.WebFS)
+	if uiErr != nil {
+		fmt.Fprintf(os.Stderr, "WARNING: could not start UI server: %v\n", uiErr)
+	} else {
+		if startErr := uiServer.Start(ctx); startErr != nil {
+			fmt.Fprintf(os.Stderr, "WARNING: UI server failed to start: %v\n", startErr)
+		} else {
+			uiURL := fmt.Sprintf("http://localhost:%d", uiServer.Port())
+			log.LogEvent("ui_server_started", "main", map[string]interface{}{
+				"port": uiServer.Port(),
+				"url":  uiURL,
+			})
+			fmt.Fprintf(os.Stderr, "\nFeedbackLoop UI: %s\n\n", uiURL)
+		}
+	}
 
 	log.LogEvent("feedbackloop_starting", "main", map[string]interface{}{
 		"version": "0.1.0",
@@ -117,8 +136,13 @@ func main() {
 }
 
 func runStdioMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger) error {
+	clientInfo := &proxy.ClientInfo{
+		ClientID:  logger.GenerateCorrelationID(),
+		Transport: "stdio",
+	}
+
 	// Create proxy server
-	proxyServer, err := proxy.NewProxyServer(upstream, log)
+	proxyServer, err := proxy.NewProxyServer(upstream, log, clientInfo)
 	if err != nil {
 		return fmt.Errorf("proxy server creation failed: %w", err)
 	}
@@ -138,9 +162,24 @@ func runStdioMode(ctx context.Context, upstream *proxy.UpstreamManager, log *log
 func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger, host string, port int) error {
 	// Create SSE handler with getServer function
 	sseHandler := mcp.NewSSEHandler(func(req *http.Request) *mcp.Server {
+		// Extract client metadata from HTTP request
+		headers := make(map[string]string)
+		for _, h := range []string{"User-Agent", "Accept", "Origin", "X-Forwarded-For", "X-Client-Id", "X-Session-Id", "X-Request-Id"} {
+			if v := req.Header.Get(h); v != "" {
+				headers[h] = v
+			}
+		}
+		clientInfo := &proxy.ClientInfo{
+			ClientID:   logger.GenerateCorrelationID(),
+			Transport:  "http",
+			RemoteAddr: req.RemoteAddr,
+			UserAgent:  req.Header.Get("User-Agent"),
+			Headers:    headers,
+		}
+
 		// For now, create a new proxy server per request
 		// (Alternative: reuse singleton ProxyServer if thread-safe)
-		proxyServer, err := proxy.NewProxyServer(upstream, log)
+		proxyServer, err := proxy.NewProxyServer(upstream, log, clientInfo)
 		if err != nil {
 			log.LogErrorEvent("proxy_server_creation_failed", "http_server", map[string]interface{}{
 				"error": err.Error(),
