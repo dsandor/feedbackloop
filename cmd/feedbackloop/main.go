@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/dsandor/feedbackloop/internal/analysis"
 	"github.com/dsandor/feedbackloop/internal/logger"
 	"github.com/dsandor/feedbackloop/internal/proxy"
 	"github.com/dsandor/feedbackloop/internal/ui"
@@ -21,6 +22,8 @@ var (
 	transport = flag.String("transport", "stdio", "Transport type: stdio or http")
 	httpHost  = flag.String("http-host", "localhost", "HTTP server host (http mode only)")
 	httpPort  = flag.Int("http-port", 3000, "HTTP server port (http mode only)")
+	uiPort    = flag.Int("ui-port", 0, "UI server port (0 = auto-select from 3070-3099)")
+	apiKey    = flag.String("api-key", "", "Anthropic API key (overrides ANTHROPIC_API_KEY env var)")
 )
 
 func main() {
@@ -59,8 +62,40 @@ func main() {
 	// Initialize logger
 	log := logger.New()
 
+	// Resolve API key: CLI flag takes priority over env var
+	resolvedAPIKey := *apiKey
+	if resolvedAPIKey == "" {
+		resolvedAPIKey = os.Getenv("ANTHROPIC_API_KEY")
+	}
+
+	// Initialize AI analyzer
+	llmModel := os.Getenv("FEEDBACKLOOP_LLM_MODEL")
+	if llmModel == "" {
+		llmModel = "claude-sonnet-4-6"
+	}
+	analyzer := analysis.New(log, resolvedAPIKey, llmModel)
+	analyzer.Start(ctx)
+
+	if resolvedAPIKey != "" {
+		log.LogEvent("ai_analysis_enabled", "main", map[string]interface{}{
+			"model": llmModel,
+		})
+	} else {
+		log.LogEvent("ai_analysis_disabled", "main", map[string]interface{}{
+			"reason": "no API key provided (use --api-key or ANTHROPIC_API_KEY)",
+		})
+	}
+
+	// Resolve UI port: CLI flag > FEEDBACKLOOP_UI_PORT env var > auto-select
+	resolvedUIPort := *uiPort
+	if resolvedUIPort == 0 {
+		if envPort := os.Getenv("FEEDBACKLOOP_UI_PORT"); envPort != "" {
+			fmt.Sscanf(envPort, "%d", &resolvedUIPort)
+		}
+	}
+
 	// Start web UI server
-	uiServer, uiErr := ui.New(log, webui.WebFS)
+	uiServer, uiErr := ui.New(log, webui.WebFS, analyzer, resolvedUIPort)
 	if uiErr != nil {
 		fmt.Fprintf(os.Stderr, "WARNING: could not start UI server: %v\n", uiErr)
 	} else {

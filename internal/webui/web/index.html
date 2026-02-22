@@ -899,6 +899,152 @@
 
     /* Hidden utility for tab switching */
     .view-hidden { display: none !important; }
+
+    /* ===== ANALYSIS VIEW ===== */
+    .analysis-panel { flex:1; display:none; flex-direction:column; overflow:hidden; }
+    .analysis-panel.active { display:flex; }
+
+    .analysis-toolbar {
+      height: var(--toolbar-h); min-height: var(--toolbar-h);
+      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+      background: var(--bg-surface); border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
+    }
+    .btn-run-analysis {
+      display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 14px;
+      background: var(--accent-blue); color: #fff; border: none;
+      border-radius: var(--radius-md); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s; font-family: var(--font-sans);
+    }
+    .btn-run-analysis:hover { background: var(--accent-blue-lt); }
+    .btn-run-analysis:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-save-report {
+      display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 12px;
+      background: transparent; color: var(--text-secondary); border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md); font-size: 12px; cursor: pointer;
+      transition: all 0.15s; font-family: var(--font-sans);
+    }
+    .btn-save-report:hover { color: var(--text-primary); border-color: var(--text-muted); }
+    .btn-save-report:disabled { opacity: 0.4; cursor: not-allowed; }
+    .analysis-status-text { font-size: 12px; color: var(--text-muted); flex: 1; }
+
+    .analysis-scroll {
+      flex: 1; overflow-y: auto; padding: 24px;
+      scrollbar-width: thin; scrollbar-color: var(--border-muted) transparent;
+    }
+    .analysis-scroll::-webkit-scrollbar { width: 6px; }
+    .analysis-scroll::-webkit-scrollbar-track { background: transparent; }
+    .analysis-scroll::-webkit-scrollbar-thumb { background: var(--border-muted); border-radius: 3px; }
+
+    /* States */
+    .an-center {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; min-height: 300px; text-align: center; color: var(--text-secondary);
+    }
+    .an-center-icon { color: var(--text-muted); }
+    .an-center-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .an-center-body { font-size: 13px; max-width: 420px; line-height: 1.6; }
+    .an-code-hint {
+      font-family: var(--font-mono); font-size: 12px; background: var(--bg-elevated);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-md);
+      padding: 10px 16px; color: var(--text-code);
+    }
+    .an-spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border-muted);
+      border-top-color: var(--accent-blue); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .an-error-card {
+      background: var(--badge-error-bg); border: 1px solid var(--badge-error-border);
+      border-radius: var(--radius-lg); padding: 20px 24px; max-width: 520px; margin: 0 auto;
+    }
+    .an-error-card .an-center-title { color: var(--badge-error-text); }
+
+    /* Report */
+    .an-report { display: flex; flex-direction: column; gap: 24px; max-width: 900px; }
+    .an-stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .an-stat-card {
+      background: var(--bg-surface); border: 1px solid var(--border-muted);
+      border-radius: var(--radius-lg); padding: 16px 18px;
+    }
+    .an-stat-num { font-family: var(--font-mono); font-size: 26px; font-weight: 600; color: var(--text-primary); line-height: 1; }
+    .an-stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .an-summary-card {
+      background: var(--bg-surface); border: 1px solid var(--border-muted);
+      border-radius: var(--radius-lg); padding: 20px 24px;
+    }
+    .an-summary-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+    .an-summary-text { font-size: 14px; line-height: 1.7; color: var(--text-primary); }
+    .an-summary-meta { font-size: 11px; color: var(--text-muted); margin-top: 14px; font-family: var(--font-mono); }
+
+    .an-recs-header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+    .an-recs-title { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+    .an-recs-badge {
+      font-size: 11px; font-weight: 600; background: var(--bg-elevated);
+      color: var(--text-secondary); border: 1px solid var(--border-muted);
+      border-radius: 12px; padding: 2px 8px;
+    }
+    .an-filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+    .an-filter-chip {
+      height: 24px; padding: 0 10px; border-radius: 12px; font-size: 11px; font-weight: 500;
+      cursor: pointer; border: 1px solid var(--border-muted); background: transparent;
+      color: var(--text-secondary); transition: all 0.15s; font-family: var(--font-sans);
+    }
+    .an-filter-chip.on { background: var(--bg-elevated); border-color: var(--accent-blue); color: var(--text-primary); }
+    .an-filter-sep { width: 1px; background: var(--border-muted); margin: 0 2px; }
+
+    /* Rec card */
+    .rec-card {
+      background: var(--bg-surface); border: 1px solid var(--border-muted);
+      border-left-width: 4px; border-radius: var(--radius-lg); overflow: hidden;
+      cursor: pointer; margin-bottom: 10px; transition: border-color 0.15s;
+    }
+    .rec-card:hover { border-color: var(--border-focus); }
+    .rec-card.pri-high   { border-left-color: #c0392b; }
+    .rec-card.pri-medium { border-left-color: #d4871a; }
+    .rec-card.pri-low    { border-left-color: #3d68a8; }
+    .rec-header { display: flex; align-items: center; gap: 8px; padding: 14px 16px; }
+    .rec-priority {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+      padding: 2px 7px; border-radius: var(--radius-sm); text-transform: uppercase;
+    }
+    .rec-priority.high   { background:#2d0e0e; color:#e05555; border:1px solid #5a1515; }
+    .rec-priority.medium { background:#271a05; color:#d4871a; border:1px solid #4a2f08; }
+    .rec-priority.low    { background:#081825; color:#4a9ecb; border:1px solid #0e2b3f; }
+    .rec-category {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: var(--radius-sm); text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .cat-description   { background:#091818; color:#3a9e9e; border:1px solid #0d2b2b; }
+    .cat-parameter     { background:#120918; color:#9e5ecb; border:1px solid #2a1040; }
+    .cat-new_tool      { background:#091811; color:#3daa6a; border:1px solid #0d2e1a; }
+    .cat-performance   { background:#191008; color:#c87d30; border:1px solid #3a2208; }
+    .cat-error_pattern { background:#1e0a0a; color:#d95555; border:1px solid #3d1515; }
+    .rec-tool-name { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+    .rec-expand-arrow { margin-left: auto; color: var(--text-muted); transition: transform 0.2s; }
+    .rec-card.expanded .rec-expand-arrow { transform: rotate(90deg); }
+    .rec-title { font-size: 13px; font-weight: 600; color: var(--text-primary); padding: 0 16px 14px; line-height: 1.4; }
+    .rec-body { display: none; border-top: 1px solid var(--border-subtle); padding: 16px; }
+    .rec-card.expanded .rec-body { display: block; }
+    .rec-section { margin-bottom: 16px; }
+    .rec-section:last-child { margin-bottom: 0; }
+    .rec-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px; }
+    .rec-section-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+    .rec-evidence-list { list-style: none; }
+    .rec-evidence-list li { font-size: 12px; color: var(--text-secondary); padding: 3px 0 3px 16px; position: relative; line-height: 1.5; }
+    .rec-evidence-list li::before { content: '→'; position: absolute; left: 0; color: var(--text-muted); }
+    .rec-diff { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .rec-diff-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .rec-diff-before .rec-diff-label { color: #d95555; }
+    .rec-diff-after  .rec-diff-label { color: #3daa6a; }
+    .rec-diff-text {
+      font-family: var(--font-mono); font-size: 11px; line-height: 1.6;
+      padding: 10px 12px; border-radius: var(--radius-md);
+      overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+    }
+    .rec-diff-before .rec-diff-text { background:#1e0a0a; color:#d9a0a0; border:1px solid #3d1515; }
+    .rec-diff-after  .rec-diff-text { background:#091811; color:#7ec8a0; border:1px solid #0d2e1a; }
   </style>
 </head>
 <body>
@@ -941,6 +1087,14 @@
         <path d="M4.5 7 L5.5 4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
       </svg>
       Tools
+    </button>
+    <button class="tab-btn" id="tabAnalysis" data-tab="analysis">
+      <svg class="tab-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M6 3.5 v2.5 l1.5 1.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M4 9.5 L8 9.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      Analysis
     </button>
   </div>
 
@@ -1047,6 +1201,32 @@
 
   </div><!-- #toolsView -->
 
+  <!-- ANALYSIS VIEW -->
+  <div class="analysis-panel" id="analysisView">
+
+    <div class="analysis-toolbar">
+      <button class="btn-run-analysis" id="runAnalysisBtn">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <circle cx="5.5" cy="5.5" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M4 3.5 L4 7.5 L8 5.5 Z" fill="currentColor"/>
+        </svg>
+        Run Analysis
+      </button>
+      <span class="analysis-status-text" id="analysisStatusText">Loading…</span>
+      <button class="btn-save-report" id="saveReportBtn" disabled>
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M2 8.5 h7 M5.5 1.5 v5 M3 5 l2.5 2.5 L8 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Save Report
+      </button>
+    </div>
+
+    <div class="analysis-scroll" id="analysisScroll">
+      <!-- rendered by JS -->
+    </div>
+
+  </div><!-- #analysisView -->
+
 </div><!-- .app -->
 
 <script>
@@ -1092,11 +1272,22 @@
 
   var tabLog      = document.getElementById('tabLog');
   var tabTools    = document.getElementById('tabTools');
+  var tabAnalysis = document.getElementById('tabAnalysis');
   var logView     = document.getElementById('logView');
   var toolsView   = document.getElementById('toolsView');
+  var analysisView= document.getElementById('analysisView');
+  var analysisScroll = document.getElementById('analysisScroll');
+  var runAnalysisBtn = document.getElementById('runAnalysisBtn');
+  var saveReportBtn  = document.getElementById('saveReportBtn');
+  var analysisStatusText = document.getElementById('analysisStatusText');
   var toolsScroll = document.getElementById('toolsScroll');
   var toolsSearchInput = document.getElementById('toolsSearchInput');
   var toolsCountLbl    = document.getElementById('toolsCountLbl');
+
+  var currentReport = null;
+  var analysisPollTimer = null;
+  var anCatFilter = 'all';
+  var anPriFilter = 'all';
 
   /* ===== STATUS ===== */
   function setStatus(cls, label) {
@@ -1131,9 +1322,10 @@
       try {
         var entry = JSON.parse(ev.data);
         enqueue(entry);
-        // Refresh tool list when a tool_catalog event arrives
-        if (entry.event_type === 'tool_catalog') {
-          loadTools();
+        if (entry.event_type === 'tool_catalog') { loadTools(); }
+        if (entry.event_type === 'analysis_complete' || entry.event_type === 'analysis_error') {
+          stopAnalysisPoll();
+          loadAnalysis();
         }
       } catch (e) {
         console.warn('[feedbackloop] bad log entry:', e);
@@ -1484,31 +1676,36 @@
   /* ===== TAB SWITCHING ===== */
   function switchTab(tab) {
     activeTab = tab;
+    var toolbar  = document.querySelector('.toolbar');
+    var feedWrap = document.querySelector('.feed-wrap');
+
+    // Reset all tabs
+    tabLog.classList.remove('active');
+    tabTools.classList.remove('active');
+    tabAnalysis.classList.remove('active');
+    toolsView.classList.remove('active');
+    analysisView.classList.remove('active');
+    if (toolbar)  toolbar.classList.add('view-hidden');
+    if (feedWrap) feedWrap.classList.add('view-hidden');
 
     if (tab === 'log') {
       tabLog.classList.add('active');
-      tabTools.classList.remove('active');
-      // show log elements
-      var toolbar = document.querySelector('.toolbar');
-      var feedWrap = document.querySelector('.feed-wrap');
       if (toolbar)  toolbar.classList.remove('view-hidden');
       if (feedWrap) feedWrap.classList.remove('view-hidden');
-      toolsView.classList.remove('active');
-    } else {
+    } else if (tab === 'tools') {
       tabTools.classList.add('active');
-      tabLog.classList.remove('active');
-      // hide log elements
-      var toolbar = document.querySelector('.toolbar');
-      var feedWrap = document.querySelector('.feed-wrap');
-      if (toolbar)  toolbar.classList.add('view-hidden');
-      if (feedWrap) feedWrap.classList.add('view-hidden');
       toolsView.classList.add('active');
       loadTools();
+    } else {
+      tabAnalysis.classList.add('active');
+      analysisView.classList.add('active');
+      loadAnalysis();
     }
   }
 
   tabLog.addEventListener('click', function () { switchTab('log'); });
   tabTools.addEventListener('click', function () { switchTab('tools'); });
+  tabAnalysis.addEventListener('click', function () { switchTab('analysis'); });
 
   /* ===== TOOL EXPLORER ===== */
 
@@ -1751,6 +1948,348 @@
     return section;
   }
 
+  /* ===== ANALYSIS ===== */
+
+  function stopAnalysisPoll() {
+    if (analysisPollTimer) { clearInterval(analysisPollTimer); analysisPollTimer = null; }
+  }
+
+  function startAnalysisPoll() {
+    stopAnalysisPoll();
+    analysisPollTimer = setInterval(function () { loadAnalysis(true); }, 2000);
+  }
+
+  function loadAnalysis(silent) {
+    fetch('/api/analysis')
+      .then(function (res) { return res.json(); })
+      .then(function (report) {
+        currentReport = report;
+        if (report.status !== 'running') { stopAnalysisPoll(); }
+        renderAnalysis(report);
+      })
+      .catch(function (err) {
+        stopAnalysisPoll();
+        if (!silent) renderAnalysisState('error', 'Could not reach analysis endpoint: ' + err.message);
+      });
+  }
+
+  function renderAnalysis(report) {
+    var s = report.status;
+    analysisStatusText.textContent = statusLabel(report);
+    saveReportBtn.disabled = (s !== 'complete');
+    runAnalysisBtn.disabled = (s === 'running');
+
+    while (analysisScroll.firstChild) analysisScroll.removeChild(analysisScroll.firstChild);
+
+    if (s === 'unconfigured') {
+      analysisScroll.appendChild(buildUnconfiguredState());
+    } else if (s === 'pending') {
+      analysisScroll.appendChild(buildPendingState());
+    } else if (s === 'running') {
+      analysisScroll.appendChild(buildRunningState());
+    } else if (s === 'insufficient_data') {
+      renderAnalysisState('info', report.message || 'Not enough data yet. Let the MCP server receive some traffic first.');
+    } else if (s === 'error') {
+      renderAnalysisState('error', report.message || 'Analysis failed.');
+    } else if (s === 'complete') {
+      analysisScroll.appendChild(buildReport(report));
+    }
+  }
+
+  function statusLabel(report) {
+    var s = report.status;
+    if (s === 'running')  return 'Analysis in progress…';
+    if (s === 'pending')  return 'Ready — click Run Analysis to start.';
+    if (s === 'unconfigured') return 'Set ANTHROPIC_API_KEY to enable.';
+    if (s === 'error')    return 'Last run failed.';
+    if (s === 'complete' && report.analyzed_at) {
+      return 'Last analyzed ' + relTime(new Date(report.analyzed_at));
+    }
+    return '';
+  }
+
+  function renderAnalysisState(type, msg) {
+    while (analysisScroll.firstChild) analysisScroll.removeChild(analysisScroll.firstChild);
+    var wrap = document.createElement('div');
+    wrap.className = 'an-center';
+    if (type === 'error') {
+      var card = document.createElement('div');
+      card.className = 'an-error-card an-center';
+      var t = document.createElement('div'); t.className = 'an-center-title'; t.textContent = 'Error'; card.appendChild(t);
+      var b = document.createElement('div'); b.className = 'an-center-body'; b.textContent = msg; card.appendChild(b);
+      var retry = document.createElement('button'); retry.className = 'btn-run-analysis'; retry.textContent = 'Try Again';
+      retry.addEventListener('click', triggerAnalysis); card.appendChild(retry);
+      analysisScroll.appendChild(card);
+    } else {
+      var b2 = document.createElement('div'); b2.className = 'an-center-body'; b2.textContent = msg;
+      wrap.appendChild(b2); analysisScroll.appendChild(wrap);
+    }
+  }
+
+  function buildUnconfiguredState() {
+    var wrap = document.createElement('div'); wrap.className = 'an-center';
+    var icon = document.createElement('div'); icon.className = 'an-center-icon';
+    icon.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="1.5"/><path d="M14 18 a6 6 0 0 1 12 0 v2 H14 Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><rect x="12" y="20" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="20" cy="25" r="1.5" fill="currentColor"/></svg>';
+    var t = document.createElement('div'); t.className = 'an-center-title'; t.textContent = 'AI Analysis Unavailable';
+    var b = document.createElement('div'); b.className = 'an-center-body';
+    b.textContent = 'Set the ANTHROPIC_API_KEY environment variable and restart feedbackloop to enable AI-powered tool analysis.';
+    var code = document.createElement('div'); code.className = 'an-code-hint'; code.textContent = 'export ANTHROPIC_API_KEY=sk-ant-...';
+    wrap.appendChild(icon); wrap.appendChild(t); wrap.appendChild(b); wrap.appendChild(code);
+    return wrap;
+  }
+
+  function buildPendingState() {
+    var wrap = document.createElement('div'); wrap.className = 'an-center';
+    var icon = document.createElement('div'); icon.className = 'an-center-icon';
+    icon.innerHTML = '<svg width="40" height="40" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="17" stroke="currentColor" stroke-width="1.5"/><path d="M13 20 l4 4 l10-10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var t = document.createElement('div'); t.className = 'an-center-title'; t.textContent = 'Ready to Analyze';
+    var b = document.createElement('div'); b.className = 'an-center-body';
+    b.textContent = 'Click Run Analysis to have Claude analyze your tool catalog and usage patterns for optimization opportunities.';
+    wrap.appendChild(icon); wrap.appendChild(t); wrap.appendChild(b);
+    return wrap;
+  }
+
+  function buildRunningState() {
+    var wrap = document.createElement('div'); wrap.className = 'an-center';
+    var spinner = document.createElement('div'); spinner.className = 'an-spinner';
+    var t = document.createElement('div'); t.className = 'an-center-title'; t.textContent = 'Claude is analyzing your tools…';
+    var b = document.createElement('div'); b.className = 'an-center-body'; b.textContent = 'This usually takes 15–30 seconds.';
+    wrap.appendChild(spinner); wrap.appendChild(t); wrap.appendChild(b);
+    return wrap;
+  }
+
+  function buildReport(report) {
+    var recs = report.recommendations || [];
+    var wrap = document.createElement('div'); wrap.className = 'an-report';
+
+    // Stats row
+    var statsRow = document.createElement('div'); statsRow.className = 'an-stats-row';
+    [
+      [report.tool_count, 'Tools Analyzed'],
+      [report.call_count, 'Tool Calls Observed'],
+      [report.error_count, 'Errors'],
+      [recs.length, 'Recommendations'],
+    ].forEach(function (pair) {
+      var card = document.createElement('div'); card.className = 'an-stat-card';
+      var num = document.createElement('div'); num.className = 'an-stat-num'; num.textContent = pair[0] || 0;
+      var lbl = document.createElement('div'); lbl.className = 'an-stat-lbl'; lbl.textContent = pair[1];
+      card.appendChild(num); card.appendChild(lbl); statsRow.appendChild(card);
+    });
+    wrap.appendChild(statsRow);
+
+    // Summary card
+    var sumCard = document.createElement('div'); sumCard.className = 'an-summary-card';
+    var sumLbl = document.createElement('div'); sumLbl.className = 'an-summary-label'; sumLbl.textContent = 'Executive Summary';
+    var sumText = document.createElement('div'); sumText.className = 'an-summary-text'; sumText.textContent = report.summary || '';
+    var sumMeta = document.createElement('div'); sumMeta.className = 'an-summary-meta';
+    sumMeta.textContent = 'Analyzed by ' + (report.model || 'Claude') +
+      (report.analyzed_at ? ' · ' + new Date(report.analyzed_at).toLocaleString() : '');
+    sumCard.appendChild(sumLbl); sumCard.appendChild(sumText); sumCard.appendChild(sumMeta);
+    wrap.appendChild(sumCard);
+
+    // Recommendations section
+    var recsWrap = document.createElement('div');
+    var recsHdr = document.createElement('div'); recsHdr.className = 'an-recs-header';
+    var recsTitle = document.createElement('div'); recsTitle.className = 'an-recs-title'; recsTitle.textContent = 'Recommendations';
+    var recsBadge = document.createElement('div'); recsBadge.className = 'an-recs-badge'; recsBadge.textContent = recs.length;
+    recsHdr.appendChild(recsTitle); recsHdr.appendChild(recsBadge); recsWrap.appendChild(recsHdr);
+
+    // Filters
+    var filterRow = document.createElement('div'); filterRow.className = 'an-filters';
+    var cats = ['all', 'description', 'parameter', 'new_tool', 'performance', 'error_pattern'];
+    var catLabels = {all:'All', description:'Description', parameter:'Parameter', new_tool:'New Tool', performance:'Performance', error_pattern:'Error Pattern'};
+    cats.forEach(function (c) {
+      var chip = document.createElement('button'); chip.className = 'an-filter-chip' + (anCatFilter===c?' on':'');
+      chip.textContent = catLabels[c]; chip.dataset.cat = c;
+      chip.addEventListener('click', function () {
+        anCatFilter = c; filterRow.querySelectorAll('.an-filter-chip').forEach(function(x){x.classList.remove('on');});
+        chip.classList.add('on'); renderRecCards(recsContainer, recs);
+      });
+      filterRow.appendChild(chip);
+    });
+    var sep = document.createElement('div'); sep.className = 'an-filter-sep'; filterRow.appendChild(sep);
+    var pris = ['all','high','medium','low'];
+    pris.forEach(function (p) {
+      var chip = document.createElement('button'); chip.className = 'an-filter-chip' + (anPriFilter===p?' on':'');
+      chip.textContent = p==='all'?'All Priority':p.charAt(0).toUpperCase()+p.slice(1); chip.dataset.pri = p;
+      chip.addEventListener('click', function () {
+        anPriFilter = p; filterRow.querySelectorAll('[data-pri]').forEach(function(x){x.classList.remove('on');});
+        chip.classList.add('on'); renderRecCards(recsContainer, recs);
+      });
+      filterRow.appendChild(chip);
+    });
+    recsWrap.appendChild(filterRow);
+
+    var recsContainer = document.createElement('div'); recsContainer.className = 'an-recs-list';
+    renderRecCards(recsContainer, recs);
+    recsWrap.appendChild(recsContainer);
+    wrap.appendChild(recsWrap);
+    return wrap;
+  }
+
+  function renderRecCards(container, recs) {
+    while (container.firstChild) container.removeChild(container.firstChild);
+    var filtered = recs.filter(function (r) {
+      if (anCatFilter !== 'all' && r.category !== anCatFilter) return false;
+      if (anPriFilter !== 'all' && r.priority !== anPriFilter) return false;
+      return true;
+    });
+    if (filtered.length === 0) {
+      var none = document.createElement('div'); none.className = 'an-center-body';
+      none.style.padding = '40px 0'; none.textContent = 'No recommendations match the current filters.';
+      container.appendChild(none); return;
+    }
+    filtered.forEach(function (rec) { container.appendChild(buildRecCard(rec)); });
+  }
+
+  function buildRecCard(rec) {
+    var card = document.createElement('div');
+    card.className = 'rec-card pri-' + (rec.priority || 'low');
+
+    // Header
+    var hdr = document.createElement('div'); hdr.className = 'rec-header';
+    var priB = document.createElement('span'); priB.className = 'rec-priority ' + (rec.priority || 'low');
+    priB.textContent = (rec.priority || 'low').toUpperCase(); hdr.appendChild(priB);
+    var catB = document.createElement('span'); catB.className = 'rec-category cat-' + (rec.category || '');
+    catB.textContent = (rec.category || '').replace(/_/g, ' '); hdr.appendChild(catB);
+    if (rec.tool_name) {
+      var tn = document.createElement('span'); tn.className = 'rec-tool-name'; tn.textContent = rec.tool_name; hdr.appendChild(tn);
+    }
+    var arrow = document.createElement('span'); arrow.className = 'rec-expand-arrow'; arrow.textContent = '▶'; hdr.appendChild(arrow);
+    card.appendChild(hdr);
+
+    // Title
+    var title = document.createElement('div'); title.className = 'rec-title'; title.textContent = rec.title || ''; card.appendChild(title);
+
+    // Body (hidden until expanded)
+    var body = document.createElement('div'); body.className = 'rec-body';
+
+    function addSection(label, content) {
+      if (!content || (Array.isArray(content) && content.length === 0)) return;
+      var sec = document.createElement('div'); sec.className = 'rec-section';
+      var lbl = document.createElement('div'); lbl.className = 'rec-section-label'; lbl.textContent = label; sec.appendChild(lbl);
+      if (Array.isArray(content)) {
+        var ul = document.createElement('ul'); ul.className = 'rec-evidence-list';
+        content.forEach(function (e) { var li = document.createElement('li'); li.textContent = e; ul.appendChild(li); });
+        sec.appendChild(ul);
+      } else {
+        var p = document.createElement('div'); p.className = 'rec-section-text'; p.textContent = content; sec.appendChild(p);
+      }
+      body.appendChild(sec);
+    }
+
+    addSection('Problem', rec.problem);
+    addSection('Suggestion', rec.suggestion);
+    addSection('Evidence', rec.evidence);
+
+    // Before / After diff
+    if (rec.original_text || rec.improved_text) {
+      var diffSec = document.createElement('div'); diffSec.className = 'rec-section';
+      var diffLbl = document.createElement('div'); diffLbl.className = 'rec-section-label'; diffLbl.textContent = 'Before / After'; diffSec.appendChild(diffLbl);
+      var diffGrid = document.createElement('div'); diffGrid.className = 'rec-diff';
+      if (rec.original_text) {
+        var bc = document.createElement('div'); bc.className = 'rec-diff-col rec-diff-before';
+        var bl = document.createElement('div'); bl.className = 'rec-diff-label'; bl.textContent = 'Before'; bc.appendChild(bl);
+        var bt = document.createElement('div'); bt.className = 'rec-diff-text'; bt.textContent = rec.original_text; bc.appendChild(bt);
+        diffGrid.appendChild(bc);
+      }
+      if (rec.improved_text) {
+        var ac = document.createElement('div'); ac.className = 'rec-diff-col rec-diff-after';
+        var al = document.createElement('div'); al.className = 'rec-diff-label'; al.textContent = 'After'; ac.appendChild(al);
+        var at = document.createElement('div'); at.className = 'rec-diff-text'; at.textContent = rec.improved_text; ac.appendChild(at);
+        diffGrid.appendChild(ac);
+      }
+      diffSec.appendChild(diffGrid); body.appendChild(diffSec);
+    }
+
+    card.appendChild(body);
+
+    card.addEventListener('click', function () {
+      card.classList.toggle('expanded');
+    });
+
+    return card;
+  }
+
+  function triggerAnalysis() {
+    runAnalysisBtn.disabled = true;
+    fetch('/api/analyze', { method: 'POST' })
+      .then(function (res) {
+        if (res.status === 503) { loadAnalysis(); return; }
+        if (res.status === 409) { loadAnalysis(); return; }
+        currentReport = { status: 'running' };
+        renderAnalysis(currentReport);
+        startAnalysisPoll();
+      })
+      .catch(function (err) {
+        runAnalysisBtn.disabled = false;
+        renderAnalysisState('error', 'Failed to start analysis: ' + err.message);
+      });
+  }
+
+  function buildSavedReport(report) {
+    var recs = report.recommendations || [];
+    var date = report.analyzed_at ? new Date(report.analyzed_at).toLocaleString() : '';
+    var recsHtml = recs.map(function (rec) {
+      var evidence = (rec.evidence || []).map(function(e){return '<li>'+esc(e)+'</li>';}).join('');
+      var diff = '';
+      if (rec.original_text || rec.improved_text) {
+        diff = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">' +
+          (rec.original_text ? '<div><div style="font-size:10px;font-weight:700;color:#d95555;margin-bottom:6px;text-transform:uppercase">Before</div><pre style="background:#1e0a0a;color:#d9a0a0;border:1px solid #3d1515;border-radius:6px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.6">'+esc(rec.original_text)+'</pre></div>':'') +
+          (rec.improved_text ? '<div><div style="font-size:10px;font-weight:700;color:#3daa6a;margin-bottom:6px;text-transform:uppercase">After</div><pre style="background:#091811;color:#7ec8a0;border:1px solid #0d2e1a;border-radius:6px;padding:10px 12px;white-space:pre-wrap;word-break:break-word;font-size:11px;line-height:1.6">'+esc(rec.improved_text)+'</pre></div>':'') +
+          '</div>';
+      }
+      var priColor = {high:'#c0392b',medium:'#d4871a',low:'#3d68a8'}[rec.priority]||'#3d68a8';
+      return '<div style="border:1px solid #252b3a;border-left:4px solid '+priColor+';border-radius:8px;padding:18px 20px;margin-bottom:12px;background:#111418">' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">' +
+        '<span style="font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:#1c2029;color:'+priColor+'">'+(rec.priority||'').toUpperCase()+'</span>' +
+        '<span style="font-size:10px;font-weight:600;text-transform:uppercase;padding:2px 7px;border-radius:3px;background:#1c2029;color:#7e8aa3">'+(rec.category||'').replace(/_/g,' ')+'</span>' +
+        (rec.tool_name?'<span style="font-family:monospace;font-size:11px;color:#3f4a62">'+esc(rec.tool_name)+'</span>':'') +
+        '</div>' +
+        '<div style="font-size:14px;font-weight:600;color:#dde2ef;margin-bottom:12px">'+esc(rec.title||'')+'</div>' +
+        (rec.problem?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#3f4a62;margin-bottom:4px">Problem</div><div style="font-size:13px;color:#7e8aa3;line-height:1.6">'+esc(rec.problem)+'</div></div>':'') +
+        (rec.suggestion?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#3f4a62;margin-bottom:4px">Suggestion</div><div style="font-size:13px;color:#7e8aa3;line-height:1.6">'+esc(rec.suggestion)+'</div></div>':'') +
+        (evidence?'<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#3f4a62;margin-bottom:4px">Evidence</div><ul style="list-style:none;padding:0">'+evidence+'</ul></div>':'') +
+        diff + '</div>';
+    }).join('');
+
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>feedbackloop Analysis Report</title>' +
+      '<style>*{box-sizing:border-box;margin:0;padding:0}body{background:#0d0f12;color:#dde2ef;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;font-size:13px;padding:32px}' +
+      '.report{max-width:900px;margin:0 auto}.header{margin-bottom:28px}.title{font-size:22px;font-weight:700;color:#dde2ef}.sub{font-size:12px;color:#3f4a62;font-family:monospace;margin-top:6px}' +
+      '.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}.stat{background:#111418;border:1px solid #252b3a;border-radius:8px;padding:16px 18px}.stat-num{font-family:monospace;font-size:24px;font-weight:600;color:#dde2ef}.stat-lbl{font-size:11px;color:#7e8aa3;text-transform:uppercase;letter-spacing:.04em;margin-top:5px}' +
+      '.summary{background:#111418;border:1px solid #252b3a;border-radius:8px;padding:20px 24px;margin-bottom:24px}.summary-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:#3f4a62;margin-bottom:10px}.summary-text{font-size:14px;line-height:1.7;color:#dde2ef}.summary-meta{font-size:11px;color:#3f4a62;font-family:monospace;margin-top:12px}' +
+      'li::before{content:"→ ";color:#3f4a62}' +
+      '</style></head><body><div class="report">' +
+      '<div class="header"><div class="title">feedbackloop — AI Analysis Report</div><div class="sub">Analyzed by '+(report.model||'Claude')+' · '+date+'</div></div>' +
+      '<div class="stats">' +
+      '<div class="stat"><div class="stat-num">'+(report.tool_count||0)+'</div><div class="stat-lbl">Tools Analyzed</div></div>' +
+      '<div class="stat"><div class="stat-num">'+(report.call_count||0)+'</div><div class="stat-lbl">Tool Calls</div></div>' +
+      '<div class="stat"><div class="stat-num">'+(report.error_count||0)+'</div><div class="stat-lbl">Errors</div></div>' +
+      '<div class="stat"><div class="stat-num">'+recs.length+'</div><div class="stat-lbl">Recommendations</div></div>' +
+      '</div>' +
+      '<div class="summary"><div class="summary-lbl">Executive Summary</div><div class="summary-text">'+esc(report.summary||'')+'</div><div class="summary-meta">'+date+'</div></div>' +
+      '<div style="font-size:15px;font-weight:600;color:#dde2ef;margin-bottom:14px">Recommendations ('+recs.length+')</div>' +
+      recsHtml +
+      '</div></body></html>';
+  }
+
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  runAnalysisBtn.addEventListener('click', triggerAnalysis);
+
+  saveReportBtn.addEventListener('click', function () {
+    if (!currentReport || currentReport.status !== 'complete') return;
+    var html = buildSavedReport(currentReport);
+    var blob = new Blob([html], { type: 'text/html' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'feedbackloop-analysis-' + new Date().toISOString().slice(0,10) + '.html';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
+  });
+
   /* ===== TOOLS SEARCH ===== */
   toolsSearchInput.addEventListener('input', function () {
     toolsFilterTxt = toolsSearchInput.value.trim().toLowerCase();
@@ -1760,7 +2299,8 @@
   /* ===== BOOT ===== */
   refreshCount();
   connect();
-  loadTools(); // pre-fetch on initial load
+  loadTools();    // pre-fetch tools on initial load
+  loadAnalysis(); // pre-fetch analysis state on initial load
 
 }());
 </script>
