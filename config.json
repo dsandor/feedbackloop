@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  },
+  "settings": {
+    "model": "claude-sonnet-4-6",
+    "transport": "stdio",
+    "httpHost": "localhost",
+    "httpPort": 3000,
+    "uiPort": 0,
+    "apiKey": "",
+    "server": ""
+  }
+}

@@ -1045,6 +1045,432 @@
     }
     .rec-diff-before .rec-diff-text { background:#1e0a0a; color:#d9a0a0; border:1px solid #3d1515; }
     .rec-diff-after  .rec-diff-text { background:#091811; color:#7ec8a0; border:1px solid #0d2e1a; }
+
+    /* ===== SETTINGS VIEW ===== */
+    .settings-panel { flex:1; display:none; flex-direction:column; overflow:hidden; }
+    .settings-panel.active { display:flex; }
+
+    .settings-scroll {
+      flex: 1; overflow-y: auto; padding: 24px 28px;
+    }
+
+    .settings-section {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-lg);
+      padding: 20px 22px;
+      margin-bottom: 18px;
+      max-width: 720px;
+    }
+
+    .settings-section-title {
+      font-size: 12px; font-weight: 600; color: var(--text-primary);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      margin-bottom: 4px;
+    }
+
+    .settings-section-desc {
+      font-size: 12px; color: var(--text-secondary); line-height: 1.6;
+      margin-bottom: 14px;
+    }
+
+    .settings-field { margin-bottom: 14px; }
+    .settings-field:last-child { margin-bottom: 0; }
+
+    .settings-label {
+      display: block; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+      margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+
+    .settings-select {
+      width: 100%; max-width: 420px;
+      background: var(--bg-elevated); color: var(--text-primary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-md);
+      padding: 7px 10px; font-size: 13px; font-family: var(--font-sans);
+      outline: none; cursor: pointer; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237e8aa3' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      padding-right: 28px;
+    }
+    .settings-select:focus { border-color: var(--border-focus); }
+    .settings-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .settings-textarea {
+      width: 100%;
+      background: var(--bg-elevated); color: var(--text-code);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-md);
+      padding: 10px 12px; font-size: 12px; font-family: var(--font-mono);
+      line-height: 1.6; resize: vertical; min-height: 200px;
+      outline: none; tab-size: 2;
+    }
+    .settings-textarea:focus { border-color: var(--border-focus); }
+
+    .settings-restart-warn {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.2);
+      border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: 14px;
+      font-size: 12px; color: var(--amber-mid); line-height: 1.5;
+    }
+    .settings-restart-warn svg { flex-shrink:0; margin-top:1px; }
+
+    .settings-actions { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+
+    .btn-settings-save {
+      display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 16px;
+      background: var(--accent-blue); color: #fff; border: none;
+      border-radius: var(--radius-md); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s; font-family: var(--font-sans);
+    }
+    .btn-settings-save:hover { background: var(--accent-blue-lt); }
+    .btn-settings-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .settings-save-status {
+      font-size: 12px; color: var(--text-muted);
+      transition: opacity 0.3s ease;
+    }
+    .settings-save-status.ok { color: #22c55e; }
+    .settings-save-status.err { color: var(--badge-error-text); }
+
+    .settings-model-hint {
+      font-size: 11px; color: var(--text-muted); margin-top: 5px; font-family: var(--font-mono);
+    }
+
+    .settings-apikey-notice {
+      font-size: 12px; color: var(--text-muted); padding: 6px 0;
+    }
+
+    /* ===== SETTINGS: NEW FORM ELEMENTS ===== */
+
+    /* Generic text/number input matching existing aesthetic */
+    .settings-input {
+      width: 100%; max-width: 420px;
+      height: 32px; padding: 0 10px;
+      background: var(--bg-elevated); color: var(--text-primary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-md);
+      font-size: 13px; font-family: var(--font-mono);
+      outline: none;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .settings-input:focus {
+      border-color: var(--border-focus); background: var(--bg-active);
+    }
+    .settings-input::placeholder { color: var(--text-muted); font-family: var(--font-sans); }
+    .settings-input:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* Hint text below any field */
+    .settings-input-hint {
+      font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.5;
+    }
+    .settings-input-hint code { font-family: var(--font-mono); font-size: 10px; }
+
+    /* Transport segmented control */
+    .transport-toggle {
+      display: inline-flex;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md);
+      padding: 3px; gap: 2px;
+    }
+    .transport-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 20px;
+      border-radius: calc(var(--radius-md) - 1px);
+      border: none; background: transparent;
+      color: var(--text-secondary); font-size: 12px; font-weight: 500;
+      font-family: var(--font-sans); cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .transport-btn.active {
+      background: var(--accent-blue); color: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .transport-btn:not(.active):hover { color: var(--text-primary); background: var(--bg-hover); }
+
+    /* HTTP-specific fields: animate in/out */
+    .http-fields {
+      overflow: hidden; max-height: 0; opacity: 0; margin-top: 0;
+      transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease;
+    }
+    .http-fields.visible { max-height: 120px; opacity: 1; margin-top: 14px; }
+
+    /* Side-by-side field layout */
+    .settings-field-row { display: flex; gap: 12px; align-items: flex-end; max-width: 420px; }
+    .settings-field-row .settings-field { flex: 1; margin-bottom: 0; }
+    .settings-field-row .settings-field.narrow { flex: 0 0 110px; }
+    .settings-field-row .settings-input { max-width: 100%; }
+
+    /* Section header with icon */
+    .settings-section-hdr {
+      display: flex; align-items: flex-start; gap: 12px; margin-bottom: 18px;
+    }
+    .settings-section-ico {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--bg-elevated); border: 1px solid var(--border-muted);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--accent-blue-lt); margin-top: 1px;
+    }
+    .settings-section-hdr .settings-section-title { margin-bottom: 3px; }
+    .settings-section-hdr .settings-section-desc  { margin-bottom: 0; }
+
+    /* Divider between fields within a section */
+    .settings-divider {
+      border: none; border-top: 1px solid var(--border-subtle);
+      margin: 16px 0;
+    }
+
+    /* ===== SNAPSHOT BANNER ===== */
+    .snapshot-banner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      height: 36px;
+      min-height: 36px;
+      background: #0b1a2e;
+      border-bottom: 1px solid #1a3255;
+      flex-shrink: 0;
+      z-index: 9;
+    }
+    .snapshot-banner.visible { display: flex; }
+    .snapshot-banner-icon { color: #4a9ecb; flex-shrink: 0; }
+    .snapshot-banner-text {
+      font-size: 12px;
+      color: #6fa8cc;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .snapshot-banner-name {
+      font-weight: 600;
+      color: #8fc4e8;
+    }
+    .snapshot-banner-exit {
+      height: 24px;
+      padding: 0 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid #1a3255;
+      background: #0f2540;
+      color: #4a9ecb;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.14s ease;
+    }
+    .snapshot-banner-exit:hover {
+      background: #1a3255;
+      color: #8fc4e8;
+    }
+
+    /* ===== MODAL OVERLAY ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.65);
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.visible { display: flex; }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-lg);
+      width: 480px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .modal-box.wide { width: 560px; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .modal-close-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.12s ease;
+    }
+    .modal-close-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border-muted);
+    }
+
+    .modal-body {
+      padding: 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .modal-body::-webkit-scrollbar       { width: 4px; }
+    .modal-body::-webkit-scrollbar-track { background: transparent; }
+    .modal-body::-webkit-scrollbar-thumb { background: var(--border-muted); border-radius: 3px; }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 14px 18px;
+      border-top: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+
+    /* Modal form fields */
+    .modal-field { margin-bottom: 16px; }
+    .modal-field:last-child { margin-bottom: 0; }
+    .modal-label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .modal-input {
+      width: 100%;
+      height: 32px;
+      padding: 0 10px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .modal-input:focus { border-color: var(--border-focus); }
+    .modal-input-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+
+    /* Buttons inside modals */
+    .btn-modal-cancel {
+      height: 30px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-muted);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .btn-modal-cancel:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+    .btn-modal-primary {
+      height: 30px;
+      padding: 0 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(61,104,168,0.5);
+      background: rgba(26,44,72,0.6);
+      color: #6b9fd4;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .btn-modal-primary:hover { background: rgba(26,44,72,0.9); color: #8fc0e8; border-color: var(--accent-blue); }
+    .btn-modal-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-modal-danger {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(217,85,85,0.3);
+      background: transparent;
+      color: #c06060;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .btn-modal-danger:hover { background: rgba(217,85,85,0.1); color: #d95555; border-color: rgba(217,85,85,0.5); }
+
+    /* Snapshot list (in load modal) */
+    .snap-list { display: flex; flex-direction: column; gap: 8px; }
+    .snap-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: border-color 0.12s ease;
+    }
+    .snap-item:hover { border-color: var(--border-muted); }
+    .snap-item-info { flex: 1; min-width: 0; }
+    .snap-item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .snap-item-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      margin-top: 3px;
+    }
+    .snap-item-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; }
+    .btn-snap-load {
+      height: 26px;
+      padding: 0 10px;
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(61,104,168,0.4);
+      background: rgba(26,44,72,0.5);
+      color: #6b9fd4;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.14s ease;
+    }
+    .btn-snap-load:hover { background: rgba(26,44,72,0.8); color: #8fc0e8; }
+
+    .snap-list-empty {
+      text-align: center;
+      padding: 32px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+    .snap-status-msg {
+      font-size: 12px;
+      color: var(--text-muted);
+      min-height: 18px;
+      margin-right: auto;
+    }
+    .snap-status-msg.err { color: var(--badge-error-text); }
+    .snap-status-msg.ok  { color: #3daa6a; }
   </style>
 </head>
 <body>
@@ -1096,6 +1522,24 @@
       </svg>
       Analysis
     </button>
+    <button class="tab-btn" id="tabSettings" data-tab="settings">
+      <svg class="tab-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <circle cx="6" cy="6" r="1.8" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M6 1.5 v1.2 M6 9.3 v1.2 M1.5 6 h1.2 M9.3 6 h1.2 M2.9 2.9 l.85.85 M8.25 8.25 l.85.85 M9.1 2.9 l-.85.85 M3.75 8.25 l-.85.85" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      </svg>
+      Settings
+    </button>
+  </div>
+
+  <!-- SNAPSHOT BANNER (visible only in snapshot mode) -->
+  <div class="snapshot-banner" id="snapshotBanner">
+    <svg class="snapshot-banner-icon" width="13" height="13" viewBox="0 0 13 13" fill="none">
+      <rect x="1" y="3.5" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+      <path d="M4 3.5 v-1 a2.5 2.5 0 0 1 5 0 v1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+      <circle cx="6.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.1"/>
+    </svg>
+    <span class="snapshot-banner-text" id="snapshotBannerText">Viewing snapshot</span>
+    <button class="snapshot-banner-exit" id="snapshotExitBtn">Exit Snapshot</button>
   </div>
 
   <!-- LOG VIEW (toolbar + feed) -->
@@ -1141,6 +1585,23 @@
             <path d="M2 2.5 h7 M4.5 2.5 V1.5 h2 v1 M4 2.5 l.4 5.5 h2.2 l.4-5.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           Clear
+        </button>
+        <div class="sep"></div>
+        <button class="tool-btn" id="saveSnapshotBtn" title="Save a snapshot of current logs, tools, and analysis">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <rect x="1.5" y="1.5" width="8" height="8" rx="1.2" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3.5 1.5 v2.5 h4 v-2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.5 6.5 h6 M2.5 8 h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          Save Snapshot
+        </button>
+        <button class="tool-btn" id="loadSnapshotBtn" title="Browse and load a saved snapshot">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M1.5 3.5 h8 v6 h-8 z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1.5 3.5 l1.5-2 h3 l1.5 2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5.5 5.5 v2.5 M4 6.5 l1.5 1.5 1.5-1.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Snapshots
         </button>
         <span class="count-lbl" id="countLbl">0 entries</span>
       </div>
@@ -1227,6 +1688,261 @@
 
   </div><!-- #analysisView -->
 
+  <!-- SETTINGS VIEW -->
+  <div class="settings-panel" id="settingsView">
+    <div class="settings-scroll" id="settingsScroll">
+
+      <!-- Restart notice -->
+      <div class="settings-restart-warn" style="max-width:720px;margin-bottom:20px">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <path d="M6.5 1.5 L11.5 10.5 H1.5 Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          <path d="M6.5 5.5 v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="6.5" cy="9.5" r="0.7" fill="currentColor"/>
+        </svg>
+        Changes are written to <code style="font-family:var(--font-mono);font-size:11px">config.json</code> and require a feedbackloop restart to take effect.
+      </div>
+
+      <!-- ── SECTION: Transport ── -->
+      <div class="settings-section">
+        <div class="settings-section-hdr">
+          <div class="settings-section-ico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M2 5h11M2 10h11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+              <circle cx="5.5" cy="5" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+              <circle cx="9.5" cy="10" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+            </svg>
+          </div>
+          <div>
+            <div class="settings-section-title">Transport</div>
+            <div class="settings-section-desc">How MCP clients connect to this proxy.</div>
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label">Client-facing transport mode</label>
+          <div class="transport-toggle" id="transportToggle">
+            <button class="transport-btn active" id="transportStdioBtn" data-value="stdio">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <rect x="1" y="2.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M3 5.5 l1.5 1-1.5 1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M6.5 7.5h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+              </svg>
+              stdio
+            </button>
+            <button class="transport-btn" id="transportHttpBtn" data-value="http">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.1"/>
+                <path d="M1.5 6h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                <path d="M6 1.5c-1.4 1.4-2 2.7-2 4.5s.6 3.1 2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                <path d="M6 1.5c1.4 1.4 2 2.7 2 4.5s-.6 3.1-2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              </svg>
+              http
+            </button>
+          </div>
+          <div class="settings-input-hint" id="transportHint">
+            Listen on stdin/stdout — use this when configured as a Claude Desktop MCP server.
+          </div>
+        </div>
+
+        <!-- HTTP-only fields (animated reveal) -->
+        <div class="http-fields" id="httpFields">
+          <div class="settings-field-row">
+            <div class="settings-field">
+              <label class="settings-label" for="httpHostInput">Bind host</label>
+              <input class="settings-input" id="httpHostInput" type="text" placeholder="localhost" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="settings-field narrow">
+              <label class="settings-label" for="httpPortInput">Port</label>
+              <input class="settings-input" id="httpPortInput" type="number" placeholder="3000" min="1" max="65535" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: Upstream MCP Server ── -->
+      <div class="settings-section">
+        <div class="settings-section-hdr">
+          <div class="settings-section-ico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="2" y="3" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M2 6h11" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M5 9h5M5 11h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div>
+            <div class="settings-section-title">Upstream MCP Server</div>
+            <div class="settings-section-desc">Which server to proxy and how it is launched.</div>
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label" for="serverNameInput">Active server</label>
+          <input class="settings-input" id="serverNameInput" type="text" list="serverNameList"
+                 placeholder="(first entry)" autocomplete="off" spellcheck="false" />
+          <datalist id="serverNameList"></datalist>
+          <div class="settings-input-hint">
+            Name of the <code>mcpServers</code> entry to proxy. Leave blank to use the first entry.
+          </div>
+        </div>
+
+        <hr class="settings-divider" />
+
+        <div class="settings-field">
+          <label class="settings-label" for="configTextarea">mcpServers (JSON)</label>
+          <textarea class="settings-textarea" id="configTextarea" rows="10"
+                    spellcheck="false" autocomplete="off"></textarea>
+          <div class="settings-input-hint" id="mcpServersHint"></div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: UI Server ── -->
+      <div class="settings-section">
+        <div class="settings-section-hdr">
+          <div class="settings-section-ico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="1.5" y="2.5" width="12" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M5 13h5M7.5 11v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="7.5" cy="6.5" r="1.8" stroke="currentColor" stroke-width="1.05"/>
+            </svg>
+          </div>
+          <div>
+            <div class="settings-section-title">UI Server</div>
+            <div class="settings-section-desc">Port for this web interface.</div>
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label" for="uiPortInput">UI port</label>
+          <input class="settings-input" id="uiPortInput" type="number" placeholder="0"
+                 min="0" max="65535" style="max-width:140px" />
+          <div class="settings-input-hint">0 = auto-select from range 3070–3099</div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: AI Analysis ── -->
+      <div class="settings-section">
+        <div class="settings-section-hdr">
+          <div class="settings-section-ico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <path d="M7.5 2.5 C4.7 2.5 2.5 4.7 2.5 7.5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5Z" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M5.5 6.5c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+              <circle cx="7.5" cy="10.5" r=".7" fill="currentColor"/>
+            </svg>
+          </div>
+          <div>
+            <div class="settings-section-title">AI Analysis</div>
+            <div class="settings-section-desc">Claude model and credentials for the AI analysis feature.</div>
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label" for="modelSelect">Model</label>
+          <select class="settings-select" id="modelSelect">
+            <option value="">Loading models…</option>
+          </select>
+          <div class="settings-input-hint" id="modelHint"></div>
+          <div class="settings-apikey-notice" id="modelApiKeyNotice" style="display:none">
+            Provide an Anthropic API key below to load available models.
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label" for="apiKeyInput">Anthropic API key</label>
+          <input class="settings-input" id="apiKeyInput" type="password"
+                 placeholder="sk-ant-…" autocomplete="new-password"
+                 style="max-width:420px;letter-spacing:0.05em" />
+          <div class="settings-input-hint" id="apiKeyHint">
+            Leave blank to keep the existing key.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: Snapshots ── -->
+      <div class="settings-section">
+        <div class="settings-section-hdr">
+          <div class="settings-section-ico">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+              <rect x="1.5" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+              <path d="M4.5 3 v-1 a3 3 0 0 1 6 0 v1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+              <circle cx="7.5" cy="8" r="2.2" stroke="currentColor" stroke-width="1.05"/>
+            </svg>
+          </div>
+          <div>
+            <div class="settings-section-title">Snapshots</div>
+            <div class="settings-section-desc">Configure snapshot capture behaviour.</div>
+          </div>
+        </div>
+
+        <div class="settings-field">
+          <label class="settings-label" for="maxSnapLogLinesInput">Max log lines per snapshot</label>
+          <input class="settings-input" id="maxSnapLogLinesInput" type="number" placeholder="500"
+                 min="1" max="2000" style="max-width:140px" />
+          <div class="settings-input-hint">How many of the most-recent log entries to include when saving a snapshot. Default: 500. Maximum: 2000.</div>
+        </div>
+      </div>
+
+      <!-- Save row -->
+      <div style="max-width:720px">
+        <div class="settings-actions">
+          <button class="btn-settings-save" id="saveSettingsBtn">
+            <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+              <path d="M1.5 5.5 l2.5 2.5 l5.5-5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Save Settings
+          </button>
+          <span class="settings-save-status" id="settingsSaveStatus"></span>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- #settingsView -->
+
+  <!-- SAVE SNAPSHOT MODAL -->
+  <div class="modal-overlay" id="saveSnapshotModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title">Save Snapshot</span>
+        <button class="modal-close-btn" id="saveModalCloseBtn">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label class="modal-label" for="snapNameInput">Snapshot name</label>
+          <input class="modal-input" id="snapNameInput" type="text" placeholder="my-snapshot" autocomplete="off" spellcheck="false" />
+          <div class="modal-input-hint">Used as part of the filename. Alphanumeric, hyphens, and underscores only.</div>
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="snapLogLinesInput">Max log lines</label>
+          <input class="modal-input" id="snapLogLinesInput" type="number" min="1" max="2000" placeholder="500" style="max-width:120px" />
+          <div class="modal-input-hint">Number of most-recent log entries to include. Up to 2000.</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="snap-status-msg" id="saveSnapStatus"></span>
+        <button class="btn-modal-cancel" id="saveModalCancelBtn">Cancel</button>
+        <button class="btn-modal-primary" id="saveModalSaveBtn">Save Snapshot</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOAD SNAPSHOT MODAL -->
+  <div class="modal-overlay" id="loadSnapshotModal">
+    <div class="modal-box wide">
+      <div class="modal-header">
+        <span class="modal-title">Snapshots</span>
+        <button class="modal-close-btn" id="loadModalCloseBtn">&#x2715;</button>
+      </div>
+      <div class="modal-body">
+        <div class="snap-list" id="snapList">
+          <div class="snap-list-empty">Loading…</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <span class="snap-status-msg" id="loadSnapStatus"></span>
+        <button class="btn-modal-cancel" id="loadModalCloseBtn2">Close</button>
+      </div>
+    </div>
+  </div>
+
 </div><!-- .app -->
 
 <script>
@@ -1273,9 +1989,11 @@
   var tabLog      = document.getElementById('tabLog');
   var tabTools    = document.getElementById('tabTools');
   var tabAnalysis = document.getElementById('tabAnalysis');
+  var tabSettings = document.getElementById('tabSettings');
   var logView     = document.getElementById('logView');
   var toolsView   = document.getElementById('toolsView');
   var analysisView= document.getElementById('analysisView');
+  var settingsView= document.getElementById('settingsView');
   var analysisScroll = document.getElementById('analysisScroll');
   var runAnalysisBtn = document.getElementById('runAnalysisBtn');
   var saveReportBtn  = document.getElementById('saveReportBtn');
@@ -1284,10 +2002,33 @@
   var toolsSearchInput = document.getElementById('toolsSearchInput');
   var toolsCountLbl    = document.getElementById('toolsCountLbl');
 
+  var snapshotBanner   = document.getElementById('snapshotBanner');
+  var snapshotBannerTx = document.getElementById('snapshotBannerText');
+  var snapshotExitBtn  = document.getElementById('snapshotExitBtn');
+  var saveSnapshotBtn  = document.getElementById('saveSnapshotBtn');
+  var loadSnapshotBtn  = document.getElementById('loadSnapshotBtn');
+  var saveSnapshotModal = document.getElementById('saveSnapshotModal');
+  var loadSnapshotModal = document.getElementById('loadSnapshotModal');
+  var snapNameInput    = document.getElementById('snapNameInput');
+  var snapLogLinesInput = document.getElementById('snapLogLinesInput');
+  var saveSnapStatus   = document.getElementById('saveSnapStatus');
+  var loadSnapStatus   = document.getElementById('loadSnapStatus');
+  var snapList         = document.getElementById('snapList');
+
   var currentReport = null;
   var analysisPollTimer = null;
   var anCatFilter = 'all';
   var anPriFilter = 'all';
+
+  // Snapshot state
+  var snapshotMode  = false; // true when viewing a loaded snapshot
+  var snapshotData  = null;  // the loaded Snapshot object
+  // Live state saved while in snapshot mode (restored on exit)
+  var liveEntries   = [];
+  var liveElMap     = {};
+  var liveIdSeq     = 0;
+  var liveTools     = [];
+  var liveReport    = null;
 
   /* ===== STATUS ===== */
   function setStatus(cls, label) {
@@ -1351,6 +2092,10 @@
 
   /* ===== ENTRY PIPELINE ===== */
   function enqueue(raw) {
+    // While browsing a snapshot, discard incoming live entries to avoid mixing
+    // them with snapshot data. The backend log buffer captures everything.
+    if (snapshotMode) return;
+
     var id = ++idSeq;
     raw._id = id;
     raw._tsDate = new Date(raw.timestamp);
@@ -1683,8 +2428,10 @@
     tabLog.classList.remove('active');
     tabTools.classList.remove('active');
     tabAnalysis.classList.remove('active');
+    tabSettings.classList.remove('active');
     toolsView.classList.remove('active');
     analysisView.classList.remove('active');
+    settingsView.classList.remove('active');
     if (toolbar)  toolbar.classList.add('view-hidden');
     if (feedWrap) feedWrap.classList.add('view-hidden');
 
@@ -1696,6 +2443,10 @@
       tabTools.classList.add('active');
       toolsView.classList.add('active');
       loadTools();
+    } else if (tab === 'settings') {
+      tabSettings.classList.add('active');
+      settingsView.classList.add('active');
+      loadSettings();
     } else {
       tabAnalysis.classList.add('active');
       analysisView.classList.add('active');
@@ -1706,6 +2457,7 @@
   tabLog.addEventListener('click', function () { switchTab('log'); });
   tabTools.addEventListener('click', function () { switchTab('tools'); });
   tabAnalysis.addEventListener('click', function () { switchTab('analysis'); });
+  tabSettings.addEventListener('click', function () { switchTab('settings'); });
 
   /* ===== TOOL EXPLORER ===== */
 
@@ -2294,6 +3046,542 @@
   toolsSearchInput.addEventListener('input', function () {
     toolsFilterTxt = toolsSearchInput.value.trim().toLowerCase();
     renderTools();
+  });
+
+  /* ===== SETTINGS ===== */
+  var settingsCurrentModel = '';
+  var settingsLoaded = false;
+  var settingsTransport = 'stdio';
+
+  // Transport toggle
+  function setTransport(val) {
+    settingsTransport = val;
+    var stdioBtn   = document.getElementById('transportStdioBtn');
+    var httpBtn    = document.getElementById('transportHttpBtn');
+    var httpFields = document.getElementById('httpFields');
+    var hint       = document.getElementById('transportHint');
+    if (val === 'http') {
+      stdioBtn.classList.remove('active');
+      httpBtn.classList.add('active');
+      httpFields.classList.add('visible');
+      hint.textContent = 'Listen on HTTP/SSE — ideal for remote or multi-client connections.';
+    } else {
+      stdioBtn.classList.add('active');
+      httpBtn.classList.remove('active');
+      httpFields.classList.remove('visible');
+      hint.textContent = 'Listen on stdin/stdout — use this when configured as a Claude Desktop MCP server.';
+    }
+  }
+
+  document.getElementById('transportStdioBtn').addEventListener('click', function () { setTransport('stdio'); });
+  document.getElementById('transportHttpBtn').addEventListener('click', function () { setTransport('http'); });
+
+  // Keep the server-name datalist in sync with the mcpServers JSON textarea
+  function updateServerNameList(json) {
+    var dl = document.getElementById('serverNameList');
+    dl.innerHTML = '';
+    try {
+      var obj = JSON.parse(json);
+      Object.keys(obj).forEach(function (name) {
+        var opt = document.createElement('option');
+        opt.value = name;
+        dl.appendChild(opt);
+      });
+    } catch (_) {}
+  }
+
+  document.getElementById('configTextarea').addEventListener('input', function () {
+    updateServerNameList(this.value);
+  });
+
+  function loadSettings() {
+    var modelSelect         = document.getElementById('modelSelect');
+    var configTextarea      = document.getElementById('configTextarea');
+    var modelHint           = document.getElementById('modelHint');
+    var apiKeyNotice        = document.getElementById('modelApiKeyNotice');
+    var apiKeyHint          = document.getElementById('apiKeyHint');
+    var httpHostInput       = document.getElementById('httpHostInput');
+    var httpPortInput       = document.getElementById('httpPortInput');
+    var uiPortInput         = document.getElementById('uiPortInput');
+    var serverNameInput     = document.getElementById('serverNameInput');
+    var maxSnapLogLinesInput = document.getElementById('maxSnapLogLinesInput');
+
+    fetch('/api/settings')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        settingsCurrentModel = data.model || '';
+
+        // Transport
+        setTransport(data.transport || 'stdio');
+
+        // HTTP fields
+        httpHostInput.value = data.httpHost || 'localhost';
+        httpPortInput.value = data.httpPort || 3000;
+
+        // UI port
+        uiPortInput.value = typeof data.uiPort === 'number' ? data.uiPort : 0;
+
+        // Active server
+        serverNameInput.value = data.server || '';
+
+        // Snapshot log lines
+        if (maxSnapLogLinesInput) {
+          maxSnapLogLinesInput.value = typeof data.max_snapshot_log_lines === 'number' && data.max_snapshot_log_lines > 0
+            ? data.max_snapshot_log_lines : 500;
+        }
+
+        // mcpServers JSON
+        try {
+          configTextarea.value = JSON.stringify(data.mcpServers || {}, null, 2);
+          updateServerNameList(configTextarea.value);
+        } catch (_) {
+          configTextarea.value = '{}';
+        }
+
+        // Model hint
+        modelHint.textContent = 'Current: ' + (data.model || 'claude-sonnet-4-6 (default)');
+
+        // API key
+        if (data.api_key_set) {
+          apiKeyHint.textContent = 'API key is configured. Leave blank to keep existing key.';
+          apiKeyNotice.style.display = 'none';
+          loadModelList(data.model);
+        } else {
+          apiKeyHint.textContent = 'No API key configured — AI analysis will be disabled.';
+          apiKeyNotice.style.display = '';
+          modelSelect.innerHTML = '<option value="">Enter an API key to load models</option>';
+          modelSelect.disabled = true;
+        }
+
+        settingsLoaded = true;
+      })
+      .catch(function (err) {
+        document.getElementById('configTextarea').value = '// Could not load settings: ' + err.message;
+      });
+  }
+
+  function loadModelList(currentModel) {
+    var modelSelect = document.getElementById('modelSelect');
+    modelSelect.disabled = true;
+    modelSelect.innerHTML = '<option value="">Loading models…</option>';
+
+    fetch('/api/models')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var models = (data && Array.isArray(data.models)) ? data.models : [];
+        modelSelect.innerHTML = '';
+
+        var defOpt = document.createElement('option');
+        defOpt.value = '';
+        defOpt.textContent = '— Use default (claude-sonnet-4-6) —';
+        modelSelect.appendChild(defOpt);
+
+        models.forEach(function (m) {
+          var opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = m.display_name ? m.display_name + ' (' + m.id + ')' : m.id;
+          if (m.id === currentModel) opt.selected = true;
+          modelSelect.appendChild(opt);
+        });
+
+        // If current model isn't in the list, add it manually
+        if (currentModel && models.every(function (m) { return m.id !== currentModel; })) {
+          var manualOpt = document.createElement('option');
+          manualOpt.value = currentModel;
+          manualOpt.textContent = currentModel + ' (current)';
+          manualOpt.selected = true;
+          modelSelect.insertBefore(manualOpt, modelSelect.children[1] || null);
+        }
+
+        modelSelect.disabled = (models.length === 0);
+      })
+      .catch(function () {
+        modelSelect.innerHTML = '<option value="">Could not load models</option>';
+        modelSelect.disabled = true;
+      });
+  }
+
+  function saveSettings() {
+    var modelSelect         = document.getElementById('modelSelect');
+    var configTextarea      = document.getElementById('configTextarea');
+    var httpHostInput       = document.getElementById('httpHostInput');
+    var httpPortInput       = document.getElementById('httpPortInput');
+    var uiPortInput         = document.getElementById('uiPortInput');
+    var serverNameInput     = document.getElementById('serverNameInput');
+    var apiKeyInput         = document.getElementById('apiKeyInput');
+    var statusEl            = document.getElementById('settingsSaveStatus');
+    var saveBtn             = document.getElementById('saveSettingsBtn');
+    var maxSnapLogLinesInput = document.getElementById('maxSnapLogLinesInput');
+
+    statusEl.textContent = '';
+    statusEl.className = 'settings-save-status';
+
+    // Validate mcpServers JSON
+    var mcpServers;
+    try {
+      mcpServers = JSON.parse(configTextarea.value);
+    } catch (e) {
+      statusEl.textContent = 'Invalid JSON in mcpServers: ' + e.message;
+      statusEl.classList.add('err');
+      return;
+    }
+
+    var snapLines = maxSnapLogLinesInput ? (parseInt(maxSnapLogLinesInput.value, 10) || 500) : 500;
+    if (snapLines > 2000) snapLines = 2000;
+    if (snapLines < 1)    snapLines = 1;
+
+    var payload = {
+      mcpServers:          mcpServers,
+      model:               modelSelect.value,
+      transport:           settingsTransport,
+      httpHost:            httpHostInput.value.trim() || 'localhost',
+      httpPort:            parseInt(httpPortInput.value, 10) || 3000,
+      uiPort:              parseInt(uiPortInput.value, 10) || 0,
+      server:              serverNameInput.value.trim(),
+      apiKey:              apiKeyInput.value,
+      maxSnapshotLogLines: snapLines
+    };
+
+    saveBtn.disabled = true;
+    statusEl.textContent = 'Saving…';
+
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) {
+        if (!res.ok) return res.text().then(function (t) { throw new Error(t || 'HTTP ' + res.status); });
+        return res.json();
+      })
+      .then(function () {
+        statusEl.textContent = 'Saved — restart feedbackloop for changes to take effect.';
+        statusEl.classList.add('ok');
+
+        var modelHint = document.getElementById('modelHint');
+        modelHint.textContent = 'Current: ' + (modelSelect.value || 'claude-sonnet-4-6 (default)');
+
+        // Clear API key field after save and update hint
+        apiKeyInput.value = '';
+        var apiKeyHint = document.getElementById('apiKeyHint');
+        if (payload.apiKey) {
+          apiKeyHint.textContent = 'API key saved. Leave blank to keep existing key.';
+          // Refresh model list now that a key may be set
+          loadModelList(modelSelect.value);
+          document.getElementById('modelApiKeyNotice').style.display = 'none';
+        }
+
+        updateServerNameList(configTextarea.value);
+      })
+      .catch(function (err) {
+        statusEl.textContent = 'Error: ' + (err.message || 'unknown');
+        statusEl.classList.add('err');
+      })
+      .finally(function () {
+        saveBtn.disabled = false;
+        setTimeout(function () {
+          statusEl.textContent = '';
+          statusEl.className = 'settings-save-status';
+        }, 9000);
+      });
+  }
+
+  document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+
+  /* ===== SNAPSHOTS ===== */
+
+  function openSaveSnapshotModal() {
+    // Pre-fill log lines from the settings field if available.
+    var settingsLines = document.getElementById('maxSnapLogLinesInput');
+    snapLogLinesInput.value = (settingsLines && settingsLines.value) ? settingsLines.value : '500';
+    snapNameInput.value = '';
+    saveSnapStatus.textContent = '';
+    saveSnapStatus.className = 'snap-status-msg';
+    document.getElementById('saveModalSaveBtn').disabled = false;
+    saveSnapshotModal.classList.add('visible');
+    setTimeout(function () { snapNameInput.focus(); }, 50);
+  }
+
+  function closeSaveSnapshotModal() {
+    saveSnapshotModal.classList.remove('visible');
+  }
+
+  function openLoadSnapshotModal() {
+    loadSnapStatus.textContent = '';
+    loadSnapStatus.className = 'snap-status-msg';
+    loadSnapshotModal.classList.add('visible');
+    fetchSnapshotList();
+  }
+
+  function closeLoadSnapshotModal() {
+    loadSnapshotModal.classList.remove('visible');
+  }
+
+  function fetchSnapshotList() {
+    snapList.innerHTML = '<div class="snap-list-empty">Loading…</div>';
+    fetch('/api/snapshots')
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var snaps = (data && Array.isArray(data.snapshots)) ? data.snapshots : [];
+        renderSnapshotList(snaps);
+      })
+      .catch(function (err) {
+        snapList.innerHTML = '<div class="snap-list-empty">Error loading snapshots: ' + esc(err.message) + '</div>';
+      });
+  }
+
+  function fmtBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    return (n / 1048576).toFixed(1) + ' MB';
+  }
+
+  function fmtSnapDate(iso) {
+    try { return new Date(iso).toLocaleString(); } catch (_) { return iso; }
+  }
+
+  function renderSnapshotList(snaps) {
+    while (snapList.firstChild) snapList.removeChild(snapList.firstChild);
+
+    if (snaps.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'snap-list-empty';
+      empty.textContent = 'No snapshots saved yet. Use "Save Snapshot" to capture the current session.';
+      snapList.appendChild(empty);
+      return;
+    }
+
+    snaps.forEach(function (snap) {
+      var item = document.createElement('div');
+      item.className = 'snap-item';
+
+      var info = document.createElement('div');
+      info.className = 'snap-item-info';
+
+      var nm = document.createElement('div');
+      nm.className = 'snap-item-name';
+      nm.textContent = snap.name || snap.filename;
+      info.appendChild(nm);
+
+      var meta = document.createElement('div');
+      meta.className = 'snap-item-meta';
+      meta.textContent = fmtSnapDate(snap.created_at) + '  ·  ' + snap.log_count + ' entries  ·  ' + fmtBytes(snap.size_bytes);
+      info.appendChild(meta);
+      item.appendChild(info);
+
+      var actions = document.createElement('div');
+      actions.className = 'snap-item-actions';
+
+      var loadBtn = document.createElement('button');
+      loadBtn.className = 'btn-snap-load';
+      loadBtn.textContent = 'Load';
+      loadBtn.addEventListener('click', function () {
+        doLoadSnapshot(snap.filename);
+      });
+      actions.appendChild(loadBtn);
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'btn-modal-danger';
+      delBtn.textContent = 'Delete';
+      delBtn.title = 'Permanently delete this snapshot';
+      delBtn.addEventListener('click', function () {
+        if (!confirm('Delete snapshot "' + snap.name + '"?')) return;
+        doDeleteSnapshot(snap.filename, item);
+      });
+      actions.appendChild(delBtn);
+
+      item.appendChild(actions);
+      snapList.appendChild(item);
+    });
+  }
+
+  function doSaveSnapshot() {
+    var name = snapNameInput.value.trim() || 'snapshot';
+    var lines = parseInt(snapLogLinesInput.value, 10);
+    if (isNaN(lines) || lines <= 0) lines = 500;
+    if (lines > 2000) lines = 2000;
+
+    var saveBtn = document.getElementById('saveModalSaveBtn');
+    saveBtn.disabled = true;
+    saveSnapStatus.textContent = 'Saving…';
+    saveSnapStatus.className = 'snap-status-msg';
+
+    fetch('/api/snapshot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, max_log_lines: lines })
+    })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error || 'HTTP ' + res.status); });
+        return res.json();
+      })
+      .then(function (meta) {
+        saveSnapStatus.textContent = 'Saved: ' + meta.filename;
+        saveSnapStatus.className = 'snap-status-msg ok';
+        setTimeout(closeSaveSnapshotModal, 1800);
+      })
+      .catch(function (err) {
+        saveSnapStatus.textContent = 'Error: ' + err.message;
+        saveSnapStatus.className = 'snap-status-msg err';
+        saveBtn.disabled = false;
+      });
+  }
+
+  function doLoadSnapshot(filename) {
+    loadSnapStatus.textContent = 'Loading…';
+    loadSnapStatus.className = 'snap-status-msg';
+
+    fetch('/api/snapshot?file=' + encodeURIComponent(filename))
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error || 'HTTP ' + res.status); });
+        return res.json();
+      })
+      .then(function (snap) {
+        closeLoadSnapshotModal();
+        enterSnapshotMode(snap);
+      })
+      .catch(function (err) {
+        loadSnapStatus.textContent = 'Error: ' + err.message;
+        loadSnapStatus.className = 'snap-status-msg err';
+      });
+  }
+
+  function doDeleteSnapshot(filename, itemEl) {
+    fetch('/api/snapshot?file=' + encodeURIComponent(filename), { method: 'DELETE' })
+      .then(function (res) {
+        if (!res.ok) return res.json().then(function (d) { throw new Error(d.error || 'HTTP ' + res.status); });
+        if (itemEl && itemEl.parentNode) itemEl.parentNode.removeChild(itemEl);
+        // If list is now empty, show empty message.
+        if (snapList.children.length === 0) {
+          var empty = document.createElement('div');
+          empty.className = 'snap-list-empty';
+          empty.textContent = 'No snapshots saved yet.';
+          snapList.appendChild(empty);
+        }
+      })
+      .catch(function (err) {
+        loadSnapStatus.textContent = 'Delete failed: ' + err.message;
+        loadSnapStatus.className = 'snap-status-msg err';
+      });
+  }
+
+  function enterSnapshotMode(snap) {
+    // Save live state before switching.
+    liveEntries   = entries.slice();
+    liveElMap     = {};
+    Object.keys(elMap).forEach(function (k) { liveElMap[k] = elMap[k]; });
+    liveIdSeq     = idSeq;
+    liveTools     = allTools.slice();
+    liveReport    = currentReport;
+
+    snapshotMode  = true;
+    snapshotData  = snap;
+
+    // Show banner.
+    var dt = snap.created_at ? fmtSnapDate(snap.created_at) : '';
+    var logCount = (snap.log_entries ? snap.log_entries.length : 0);
+    snapshotBannerTx.innerHTML = 'Viewing snapshot <span class="snapshot-banner-name">' + esc(snap.name || 'snapshot') + '</span>' +
+      (dt ? '&nbsp;&nbsp;&middot;&nbsp;&nbsp;' + dt : '') +
+      '&nbsp;&nbsp;&middot;&nbsp;&nbsp;' + logCount + ' entries';
+    snapshotBanner.classList.add('visible');
+
+    // Reset live arrays — snapshot entries will use their own IDs.
+    entries = [];
+    elMap   = {};
+    idSeq   = 0;
+    pending = [];
+
+    // Render snapshot entries directly (bypass enqueue which is now gated).
+    while (feed.firstChild) feed.removeChild(feed.firstChild);
+    if (snap.log_entries && snap.log_entries.length > 0) {
+      var frag = document.createDocumentFragment();
+      snap.log_entries.forEach(function (rawEntry) {
+        var id = ++idSeq;
+        var entry = {};
+        // Shallow copy to avoid mutating the snap object.
+        Object.keys(rawEntry).forEach(function (k) { entry[k] = rawEntry[k]; });
+        entry._id     = id;
+        entry._tsDate = new Date(entry.timestamp);
+        entries.push(entry);
+        var el = buildEl(entry);
+        elMap[id] = el;
+        applyFilter(el, entry);
+        frag.appendChild(el);
+      });
+      feed.appendChild(frag);
+    } else {
+      feed.appendChild(emptyState);
+    }
+    refreshCount();
+
+    // Snapshot tool catalog.
+    allTools = (snap.tool_catalog && Array.isArray(snap.tool_catalog.tools))
+      ? snap.tool_catalog.tools : [];
+    if (activeTab === 'tools') renderTools();
+
+    // Snapshot analysis.
+    currentReport = snap.analysis || null;
+    if (activeTab === 'analysis') {
+      renderAnalysis(currentReport || { status: 'pending', message: 'No analysis in this snapshot.' });
+    }
+
+    // Switch to log tab to show snapshot entries.
+    switchTab('log');
+  }
+
+  function exitSnapshotMode() {
+    if (!snapshotMode) return;
+    snapshotMode = false;
+    snapshotData = null;
+
+    // Hide banner.
+    snapshotBanner.classList.remove('visible');
+
+    // Restore live state.
+    entries      = liveEntries;
+    elMap        = liveElMap;
+    idSeq        = liveIdSeq;
+    allTools     = liveTools;
+    currentReport = liveReport;
+
+    // Re-render log feed from live entries.
+    while (feed.firstChild) feed.removeChild(feed.firstChild);
+    if (entries.length === 0) {
+      feed.appendChild(emptyState);
+    } else {
+      var frag = document.createDocumentFragment();
+      for (var i = 0; i < entries.length; i++) {
+        var el = elMap[entries[i]._id];
+        if (el) frag.appendChild(el);
+      }
+      feed.appendChild(frag);
+    }
+    refreshCount();
+
+    if (activeTab === 'tools') renderTools();
+    if (activeTab === 'analysis' && currentReport) renderAnalysis(currentReport);
+  }
+
+  // Snapshot button listeners.
+  saveSnapshotBtn.addEventListener('click', openSaveSnapshotModal);
+  loadSnapshotBtn.addEventListener('click', openLoadSnapshotModal);
+  snapshotExitBtn.addEventListener('click', exitSnapshotMode);
+
+  document.getElementById('saveModalCloseBtn').addEventListener('click', closeSaveSnapshotModal);
+  document.getElementById('saveModalCancelBtn').addEventListener('click', closeSaveSnapshotModal);
+  document.getElementById('saveModalSaveBtn').addEventListener('click', doSaveSnapshot);
+
+  document.getElementById('loadModalCloseBtn').addEventListener('click', closeLoadSnapshotModal);
+  document.getElementById('loadModalCloseBtn2').addEventListener('click', closeLoadSnapshotModal);
+
+  // Close modals on overlay click.
+  saveSnapshotModal.addEventListener('click', function (e) { if (e.target === saveSnapshotModal) closeSaveSnapshotModal(); });
+  loadSnapshotModal.addEventListener('click', function (e) { if (e.target === loadSnapshotModal) closeLoadSnapshotModal(); });
+
+  // Save on Enter in the snap name input.
+  snapNameInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') doSaveSnapshot();
+    if (e.key === 'Escape') closeSaveSnapshotModal();
   });
 
   /* ===== BOOT ===== */

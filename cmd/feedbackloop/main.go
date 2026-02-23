@@ -19,15 +19,22 @@ import (
 )
 
 var (
-	transport = flag.String("transport", "stdio", "Transport type: stdio or http")
-	httpHost  = flag.String("http-host", "localhost", "HTTP server host (http mode only)")
-	httpPort  = flag.Int("http-port", 3000, "HTTP server port (http mode only)")
-	uiPort    = flag.Int("ui-port", 0, "UI server port (0 = auto-select from 3070-3099)")
-	apiKey    = flag.String("api-key", "", "Anthropic API key (overrides ANTHROPIC_API_KEY env var)")
+	transport  = flag.String("transport", "stdio", "Transport type: stdio or http")
+	httpHost   = flag.String("http-host", "localhost", "HTTP server host (http mode only)")
+	httpPort   = flag.Int("http-port", 3000, "HTTP server port (http mode only)")
+	uiPort     = flag.Int("ui-port", 0, "UI server port (0 = auto-select from 3070-3099)")
+	apiKey     = flag.String("api-key", "", "Anthropic API key (overrides ANTHROPIC_API_KEY env var)")
+	configFile = flag.String("config", "config.json", "Path to feedbackloop config file (JSON, Claude Desktop mcpServers format)")
+	serverName = flag.String("server", "", "Name of the mcpServers entry to proxy (defaults to first entry)")
 )
 
 func main() {
 	flag.Parse()
+
+	// Track which flags were explicitly set on the command line so config file
+	// values only fill in the gaps (priority: CLI > config > env var > default).
+	explicitFlags := make(map[string]bool)
+	flag.Visit(func(f *flag.Flag) { explicitFlags[f.Name] = true })
 
 	// Exit code to return
 	exitCode := 0
@@ -53,6 +60,33 @@ func main() {
 		cancel()
 	}()
 
+	// Load config early so Settings can fill in any values not set via CLI flags.
+	// We will re-use this config later when setting up the upstream.
+	earlyConfig, _ := LoadConfig(*configFile)
+
+	// Apply config file settings for any option not explicitly set on the CLI.
+	if earlyConfig != nil && earlyConfig.Settings != nil {
+		s := earlyConfig.Settings
+		if !explicitFlags["transport"] && s.Transport != "" {
+			*transport = s.Transport
+		}
+		if !explicitFlags["http-host"] && s.HTTPHost != "" {
+			*httpHost = s.HTTPHost
+		}
+		if !explicitFlags["http-port"] && s.HTTPPort != 0 {
+			*httpPort = s.HTTPPort
+		}
+		if !explicitFlags["ui-port"] && s.UIPort != 0 {
+			*uiPort = s.UIPort
+		}
+		if !explicitFlags["api-key"] && s.APIKey != "" {
+			*apiKey = s.APIKey
+		}
+		if !explicitFlags["server"] && s.Server != "" {
+			*serverName = s.Server
+		}
+	}
+
 	// Validate transport flag
 	if *transport != "stdio" && *transport != "http" {
 		fmt.Fprintf(os.Stderr, "ERROR: Invalid transport '%s'. Must be 'stdio' or 'http'\n", *transport)
@@ -62,16 +96,19 @@ func main() {
 	// Initialize logger
 	log := logger.New()
 
-	// Resolve API key: CLI flag takes priority over env var
+	// Resolve API key: CLI flag / config file > ANTHROPIC_API_KEY env var
 	resolvedAPIKey := *apiKey
 	if resolvedAPIKey == "" {
 		resolvedAPIKey = os.Getenv("ANTHROPIC_API_KEY")
 	}
 
-	// Initialize AI analyzer
+	// Initialize AI analyzer — model priority: config file > FEEDBACKLOOP_LLM_MODEL env var > default
 	llmModel := os.Getenv("FEEDBACKLOOP_LLM_MODEL")
 	if llmModel == "" {
 		llmModel = "claude-sonnet-4-6"
+	}
+	if earlyConfig != nil && earlyConfig.Settings != nil && earlyConfig.Settings.Model != "" {
+		llmModel = earlyConfig.Settings.Model
 	}
 	analyzer := analysis.New(log, resolvedAPIKey, llmModel)
 	analyzer.Start(ctx)
@@ -82,11 +119,11 @@ func main() {
 		})
 	} else {
 		log.LogEvent("ai_analysis_disabled", "main", map[string]interface{}{
-			"reason": "no API key provided (use --api-key or ANTHROPIC_API_KEY)",
+			"reason": "no API key provided (use --api-key, config settings.apiKey, or ANTHROPIC_API_KEY)",
 		})
 	}
 
-	// Resolve UI port: CLI flag > FEEDBACKLOOP_UI_PORT env var > auto-select
+	// Resolve UI port: CLI flag / config file > FEEDBACKLOOP_UI_PORT env var > auto-select
 	resolvedUIPort := *uiPort
 	if resolvedUIPort == 0 {
 		if envPort := os.Getenv("FEEDBACKLOOP_UI_PORT"); envPort != "" {
@@ -95,7 +132,7 @@ func main() {
 	}
 
 	// Start web UI server
-	uiServer, uiErr := ui.New(log, webui.WebFS, analyzer, resolvedUIPort)
+	uiServer, uiErr := ui.New(log, webui.WebFS, analyzer, resolvedUIPort, *configFile, llmModel, resolvedAPIKey)
 	if uiErr != nil {
 		fmt.Fprintf(os.Stderr, "WARNING: could not start UI server: %v\n", uiErr)
 	} else {
@@ -122,8 +159,32 @@ func main() {
 		"http_port": *httpPort,
 	})
 
-	// Create upstream manager for chrome-devtools-mcp
-	upstream := proxy.NewUpstreamManager(log, "npx", []string{"-y", "chrome-devtools-mcp@latest"})
+	// Load config and resolve upstream server command (reuse earlyConfig if already valid).
+	cfg := earlyConfig
+	if cfg == nil {
+		var cfgErr error
+		cfg, cfgErr = LoadConfig(*configFile)
+		if cfgErr != nil {
+			fmt.Fprintf(os.Stderr, "ERROR: %v\n", cfgErr)
+			os.Exit(1)
+		}
+	}
+
+	upstreamCmd, upstreamArgs, resolveErr := cfg.ResolveServer(*serverName)
+	if resolveErr != nil {
+		fmt.Fprintf(os.Stderr, "ERROR: %v\n", resolveErr)
+		os.Exit(1)
+	}
+
+	log.LogEvent("upstream_configured", "main", map[string]interface{}{
+		"command": upstreamCmd,
+		"args":    upstreamArgs,
+		"server":  *serverName,
+		"config":  *configFile,
+	})
+
+	// Create upstream manager
+	upstream := proxy.NewUpstreamManager(log, upstreamCmd, upstreamArgs)
 
 	// Connect to upstream server
 	if err := upstream.Connect(ctx); err != nil {
