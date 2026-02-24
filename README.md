@@ -79,9 +79,15 @@ session, err := client.Connect(ctx, transport, nil)
 
 ## CLI Flags
 
-- `--transport`: Transport type (`stdio` or `http`). Default: `stdio`
-- `--http-host`: HTTP server host (HTTP mode only). Default: `localhost`
-- `--http-port`: HTTP server port (HTTP mode only). Default: `3000`
+| Flag | Description | Default |
+|---|---|---|
+| `--transport` | Transport type: `stdio` or `http` | `stdio` |
+| `--http-host` | HTTP server bind host (http mode only) | `localhost` |
+| `--http-port` | HTTP server bind port (http mode only) | `3000` |
+| `--ui-port` | Web UI server port (0 = auto-select 3070–3099) | `0` |
+| `--api-key` | Anthropic API key (overrides `ANTHROPIC_API_KEY` env var) | `""` |
+| `--config` | Path to config file | `config.json` |
+| `--server` | Name of the `mcpServers` entry to proxy (defaults to first entry) | `""` |
 
 ### Examples
 
@@ -94,17 +100,75 @@ session, err := client.Connect(ctx, transport, nil)
 
 # Run HTTP on all interfaces
 ./feedbackloop --transport=http --http-host=0.0.0.0 --http-port=3000
+
+# Use a custom config file and select a specific server
+./feedbackloop --config=/etc/feedbackloop/config.json --server=my-server
 ```
 
 ## Configuration
 
-Currently, feedbackloop is configured to proxy the `chrome-devtools-mcp` server. The upstream server is configured via:
+feedbackloop is configured via a JSON file (default: `config.json` in the working directory). The file uses the same `mcpServers` format as Claude Desktop, with an optional `settings` block for feedbackloop-specific options.
 
-```go
-upstream := proxy.NewUpstreamManager(log, "npx", []string{"-y", "chrome-devtools-mcp@latest"})
+### Config File Format
+
+```json
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  },
+  "settings": {
+    "model": "claude-sonnet-4-6",
+    "transport": "stdio",
+    "httpHost": "localhost",
+    "httpPort": 3000,
+    "uiPort": 0,
+    "apiKey": "",
+    "server": ""
+  }
+}
 ```
 
-Future versions will support configuration files for flexible upstream server configuration.
+### `mcpServers`
+
+Each entry follows the Claude Desktop format. feedbackloop proxies one upstream server at a time — by default the first entry in the map. Use `--server <name>` (or `settings.server`) to select a specific one when multiple servers are defined.
+
+| Field | Description |
+|---|---|
+| `command` | Executable to run for the upstream MCP server |
+| `args` | Arguments passed to the command |
+| `env` | (optional) Additional environment variables |
+
+### `settings`
+
+All settings fields are optional. Priority order: **CLI flag > config file > environment variable > built-in default**.
+
+| Field | CLI equivalent | Env var | Description |
+|---|---|---|---|
+| `model` | — | `FEEDBACKLOOP_LLM_MODEL` | Anthropic model for AI analysis |
+| `transport` | `--transport` | — | Client-facing transport (`stdio` or `http`) |
+| `httpHost` | `--http-host` | — | HTTP bind host |
+| `httpPort` | `--http-port` | — | HTTP bind port |
+| `uiPort` | `--ui-port` | `FEEDBACKLOOP_UI_PORT` | Web UI port (0 = auto) |
+| `apiKey` | `--api-key` | `ANTHROPIC_API_KEY` | Anthropic API key |
+| `server` | `--server` | — | `mcpServers` entry name to proxy |
+
+### Claude Desktop Integration
+
+To use feedbackloop as a transparent proxy in Claude Desktop, point the Claude Desktop config at feedbackloop instead of the real MCP server:
+
+```json
+{
+  "mcpServers": {
+    "feedbackloop": {
+      "command": "/path/to/feedbackloop",
+      "args": ["--config", "/path/to/config.json"]
+    }
+  }
+}
+```
 
 ## Testing
 

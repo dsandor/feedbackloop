@@ -522,18 +522,58 @@
       cursor: default;
     }
 
+    /* Event type + tool meta wrapper */
+    .evtype-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+
     /* Event type */
     .evtype {
       font-family: var(--font-mono);
       font-size: 12px;
       font-weight: 500;
       color: var(--text-primary);
-      flex: 1;
-      min-width: 0;
+      flex-shrink: 0;
+      white-space: nowrap;
+      letter-spacing: -0.01em;
+    }
+
+    /* Server badge inline in log rows — reuses same sc-N palette */
+    .log-server-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 15px;
+      padding: 0 5px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      flex-shrink: 0;
+    }
+
+    /* Tool name pill in log rows */
+    .log-tool-name {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      padding: 1px 6px;
+      border-radius: 3px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      letter-spacing: -0.01em;
+      max-width: 220px;
+      flex-shrink: 1;
+      min-width: 0;
     }
 
     /* Correlation ID chip */
@@ -774,11 +814,119 @@
       border-color: rgba(168,85,247,0.22);
     }
 
+    /* Call count badge */
+    .tool-call-count {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 16px;
+      padding: 0 6px;
+      border-radius: 8px;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-family: var(--font-mono);
+      background: rgba(61,104,168,0.14);
+      color: #7aa8d8;
+      border: 1px solid rgba(61,104,168,0.3);
+      white-space: nowrap;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .tool-call-count.zero {
+      background: rgba(63,74,98,0.10);
+      color: var(--text-muted);
+      border-color: rgba(63,74,98,0.2);
+    }
+
     /* Card description */
     .tool-card-desc {
       font-size: 12px;
       color: var(--text-secondary);
       line-height: 1.6;
+    }
+
+    /* Expandable description wrapper */
+    .tool-card-desc-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tool-card-desc.collapsed {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+      overflow: hidden;
+    }
+    .desc-expand-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--accent-blue-lt);
+      font-family: var(--font-sans);
+      transition: color 0.12s ease;
+      outline: none;
+      text-align: left;
+      width: fit-content;
+    }
+    .desc-expand-btn:hover { color: var(--text-primary); }
+
+    /* Modified/override badge */
+    .ann-badge.modified {
+      background: rgba(245,158,11,0.09);
+      color: #f59e0b;
+      border-color: rgba(245,158,11,0.25);
+    }
+
+    /* Server description banner (top of tools panel) */
+    .server-desc-banner {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px 16px 14px 16px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      flex-shrink: 0;
+    }
+    .server-desc-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .server-desc-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+    .server-desc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      color: var(--text-muted);
+    }
+    .server-desc-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .server-desc-status-dot.s-connected  { background: var(--green-live); }
+    .server-desc-status-dot.s-failed     { background: var(--red-dead); }
+    .server-desc-status-dot.s-connecting { background: var(--amber-mid); }
+    .server-desc-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      font-style: italic;
     }
 
     /* Schema section */
@@ -895,6 +1043,105 @@
       font-size: 12px;
       color: var(--badge-error-text);
       font-family: var(--font-mono);
+    }
+
+    /* ===== TOOLS SUB-TABS ===== */
+    .tools-subtabbar {
+      display: none;
+      flex-direction: row;
+      gap: 1px;
+      padding: 0 14px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      min-height: 32px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+    .tools-subtabbar.multi-server {
+      display: flex;
+    }
+    .tools-subtab {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      height: 26px;
+      padding: 0 10px;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      font-size: 11.5px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-bottom: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      transition: color 0.12s, background 0.12s;
+      position: relative;
+    }
+    .tools-subtab:hover {
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+    }
+    .tools-subtab.active {
+      color: var(--text-primary);
+      background: var(--bg-base);
+      border-color: var(--border-muted);
+      border-bottom: 2px solid var(--accent-blue);
+    }
+    .tools-subtab-count {
+      font-size: 9.5px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      background: var(--bg-elevated);
+      border-radius: 3px;
+      padding: 1px 4px;
+    }
+    .tools-subtab.active .tools-subtab-count {
+      color: var(--accent-blue-lt);
+      background: var(--bg-active);
+    }
+    .tools-subtab-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tools-subtab-dot.s-connected    { background: var(--green-live); }
+    .tools-subtab-dot.s-failed       { background: var(--red-dead); }
+    .tools-subtab-dot.s-connecting   { background: var(--amber-mid); animation: blink 1.1s ease-in-out infinite; }
+    .tools-subtab-dot.s-unknown      { background: var(--text-muted); }
+
+    /* Server badge on tool cards */
+    .server-badge {
+      display: inline-flex;
+      align-items: center;
+      height: 15px;
+      padding: 0 5px;
+      border-radius: 3px;
+      font-size: 9px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      align-self: center;
+      flex-shrink: 0;
+    }
+    /* Palette rotated by server index */
+    .server-badge.sc-0 { background:#071820; color:#4a9ecb; border-color:#0e2b3f; }
+    .server-badge.sc-1 { background:#091811; color:#3daa6a; border-color:#0d2e1a; }
+    .server-badge.sc-2 { background:#1a100e; color:#d4845a; border-color:#3a201a; }
+    .server-badge.sc-3 { background:#150e1a; color:#a87fd4; border-color:#2a1a3a; }
+    .server-badge.sc-4 { background:#14100a; color:#d4b45a; border-color:#3a2e0a; }
+    .server-badge.sc-5 { background:#0e1418; color:#5ab8d4; border-color:#0a2030; }
+
+    /* Tool name prefix (muted, shown when original name differs from full name) */
+    .tool-card-name-prefix {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 400;
+      align-self: center;
     }
 
     /* Hidden utility for tab switching */
@@ -1045,6 +1292,28 @@
     }
     .rec-diff-before .rec-diff-text { background:#1e0a0a; color:#d9a0a0; border:1px solid #3d1515; }
     .rec-diff-after  .rec-diff-text { background:#091811; color:#7ec8a0; border:1px solid #0d2e1a; }
+
+    /* Apply recommendations */
+    .btn-apply-recs {
+      display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 14px;
+      background: #1a4a1a; color: #4daa4d; border: 1px solid #2a6a2a;
+      border-radius: var(--radius-md); font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; font-family: var(--font-sans);
+    }
+    .btn-apply-recs:hover:not(:disabled) { background: #204e20; border-color: #3a8a3a; color: #6dca6d; }
+    .btn-apply-recs:disabled { opacity: 0.4; cursor: not-allowed; }
+    .rec-checkbox-wrap {
+      display: flex; align-items: center; padding: 0 4px; flex-shrink: 0;
+    }
+    .rec-checkbox {
+      width: 14px; height: 14px; accent-color: var(--accent-blue); cursor: pointer;
+      flex-shrink: 0;
+    }
+    .rec-applied-badge {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      padding: 2px 7px; border-radius: var(--radius-sm);
+      background: #091811; color: #3daa6a; border: 1px solid #0d2e1a;
+    }
 
     /* ===== SETTINGS VIEW ===== */
     .settings-panel { flex:1; display:none; flex-direction:column; overflow:hidden; }
@@ -1636,6 +1905,11 @@
   <!-- TOOLS VIEW -->
   <div class="tools-panel" id="toolsView">
 
+    <!-- Tools sub-tabbar (multi-server mode only) -->
+    <div class="tools-subtabbar" id="toolsSubtabbar">
+      <!-- populated by renderToolsSubTabs() -->
+    </div>
+
     <!-- Tools toolbar -->
     <div class="tools-toolbar">
       <div class="search-wrap">
@@ -1674,6 +1948,12 @@
         Run Analysis
       </button>
       <span class="analysis-status-text" id="analysisStatusText">Loading…</span>
+      <button class="btn-apply-recs" id="applyRecsBtn" disabled>
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+          <path d="M2 5.5 L4.5 8 L9 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Apply Selected
+      </button>
       <button class="btn-save-report" id="saveReportBtn" disabled>
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
           <path d="M2 8.5 h7 M5.5 1.5 v5 M3 5 l2.5 2.5 L8 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1973,6 +2253,11 @@
   var allTools       = [];   // raw tool objects from /api/tools
   var toolsFilterTxt = '';
   var activeTab      = 'log';
+  var toolsSubTab    = 'all'; // 'all' or a specific server key
+  var toolsServerMap = {};    // {serverKey: colorIndex} for badge colors
+  var toolsServersStatus = {}; // {serverKey: {status, tool_count, error}} from /api/servers
+  var toolsServerOrder = [];  // ordered list of server keys (for consistent color assignment)
+  var toolCallCounts   = {};  // {toolName: callCount} — counts tool_call_request entries
 
   /* ===== DOM ===== */
   var feed        = document.getElementById('feed');
@@ -2001,6 +2286,7 @@
   var toolsScroll = document.getElementById('toolsScroll');
   var toolsSearchInput = document.getElementById('toolsSearchInput');
   var toolsCountLbl    = document.getElementById('toolsCountLbl');
+  var toolsSubtabbar   = document.getElementById('toolsSubtabbar');
 
   var snapshotBanner   = document.getElementById('snapshotBanner');
   var snapshotBannerTx = document.getElementById('snapshotBannerText');
@@ -2019,6 +2305,9 @@
   var analysisPollTimer = null;
   var anCatFilter = 'all';
   var anPriFilter = 'all';
+  var selectedRecs = new Set(); // IDs of checked (to-apply) recommendations
+  var appliedRecs  = new Set(); // IDs of successfully applied recommendations
+  var applyRecsBtn = document.getElementById('applyRecsBtn');
 
   // Snapshot state
   var snapshotMode  = false; // true when viewing a loaded snapshot
@@ -2028,7 +2317,8 @@
   var liveElMap     = {};
   var liveIdSeq     = 0;
   var liveTools     = [];
-  var liveReport    = null;
+  var liveReport         = null;
+  var liveToolCallCounts = {};
 
   /* ===== STATUS ===== */
   function setStatus(cls, label) {
@@ -2063,7 +2353,10 @@
       try {
         var entry = JSON.parse(ev.data);
         enqueue(entry);
-        if (entry.event_type === 'tool_catalog') { loadTools(); }
+        if (entry.event_type === 'tool_catalog') { applyToolCatalog(entry.message); }
+        if (entry.event_type === 'tool_description_updated' && entry.message) {
+          handleToolDescriptionUpdated(entry.message);
+        }
         if (entry.event_type === 'analysis_complete' || entry.event_type === 'analysis_error') {
           stopAnalysisPoll();
           loadAnalysis();
@@ -2107,6 +2400,13 @@
       var evicted = entries.shift();
       var evEl = elMap[evicted._id];
       if (evEl) { evEl.parentNode && evEl.parentNode.removeChild(evEl); delete elMap[evicted._id]; }
+    }
+
+    // Track tool call counts
+    if (raw.event_type === 'tool_call_request' && raw.message && raw.message.tool) {
+      var tName = raw.message.tool;
+      toolCallCounts[tName] = (toolCallCounts[tName] || 0) + 1;
+      updateCallCountBadge(tName);
     }
 
     pending.push(raw);
@@ -2186,11 +2486,54 @@
     schedRefresh(tsEl, entry._tsDate);
     row.appendChild(tsEl);
 
-    // event type
+    // event type + optional tool meta — wrapped in a flex group that takes flex:1
+    var evGroup = document.createElement('span');
+    evGroup.className = 'evtype-group';
+
     var evEl = document.createElement('span');
     evEl.className = 'evtype';
     evEl.textContent = entry.event_type || '(unknown)';
-    row.appendChild(evEl);
+    evGroup.appendChild(evEl);
+
+    // For tool-related events, show server badge and tool name inline
+    var toolEvents = {
+      tool_call_request: true,
+      tool_call_response: true,
+      tool_call_error: true,
+      tool_call_timeout: true,
+      tool_call_cancelled: true
+    };
+    if (toolEvents[entry.event_type] && entry.message) {
+      var msg = entry.message;
+      var serverKey = msg.server_key || '';
+      var toolName  = msg.tool || '';
+
+      // Server badge — only when a server key is present
+      if (serverKey) {
+        var colorIdx = (toolsServerMap && toolsServerMap[serverKey] !== undefined)
+          ? toolsServerMap[serverKey]
+          : (Math.abs(serverKey.split('').reduce(function(a, c) { return a + c.charCodeAt(0); }, 0)) % 6);
+        var sBadge = document.createElement('span');
+        sBadge.className = 'log-server-badge sc-' + colorIdx;
+        sBadge.textContent = serverKey;
+        sBadge.title = 'Server: ' + serverKey;
+        evGroup.appendChild(sBadge);
+      }
+
+      // Tool name pill — strip server prefix if present (e.g. "chrome-devtools__foo" -> "foo")
+      if (toolName) {
+        var displayTool = toolName;
+        var sep = toolName.indexOf('__');
+        if (sep !== -1) displayTool = toolName.slice(sep + 2);
+        var toolPill = document.createElement('span');
+        toolPill.className = 'log-tool-name';
+        toolPill.textContent = displayTool;
+        toolPill.title = toolName;
+        evGroup.appendChild(toolPill);
+      }
+    }
+
+    row.appendChild(evGroup);
 
     // correlation id
     if (entry.correlation_id) {
@@ -2366,6 +2709,7 @@
     elMap   = {};
     idSeq   = 0;
     pending = [];
+    toolCallCounts = {};
 
     // Empty the feed and restore the placeholder
     while (feed.firstChild) feed.removeChild(feed.firstChild);
@@ -2373,6 +2717,15 @@
 
     scrollFab.classList.remove('show');
     refreshCount();
+
+    // Reset call count badges
+    if (activeTab === 'tools') renderTools();
+    else {
+      toolsScroll.querySelectorAll('[data-tcc]').forEach(function(el) {
+        el.textContent = '0 calls';
+        el.classList.add('zero');
+      });
+    }
   });
 
   searchInput.addEventListener('input', function () {
@@ -2463,36 +2816,227 @@
 
   function loadTools() {
     fetch('/api/tools')
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
-      })
-      .then(function (data) {
+      .then(function(res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
+      .then(function(data) {
         allTools = (data && Array.isArray(data.tools)) ? data.tools : [];
+        return fetch('/api/servers').then(function(r) { return r.ok ? r.json() : null; }).catch(function() { return null; });
+      })
+      .then(function(serverData) {
+        toolsServersStatus = {};
+        if (serverData && Array.isArray(serverData.servers)) {
+          serverData.servers.forEach(function(s) {
+            toolsServersStatus[s.key] = s;
+          });
+        }
+        rebuildServerMap(); // after toolsServersStatus is populated
+        renderToolsSubTabs();
         renderTools();
       })
-      .catch(function (err) {
+      .catch(function(err) {
         renderToolsError(err.message || 'Failed to load tools');
       });
   }
 
+  // Apply a tool_catalog payload directly (from SSE event or initial load).
+  // Using event data directly avoids a race between watchToolCatalog updating
+  // s.toolCatalog and the browser's GET /api/tools arriving before it.
+  function applyToolCatalog(msg) {
+    if (!msg || !Array.isArray(msg.tools)) { loadTools(); return; }
+    allTools = msg.tools;
+    toolsServersStatus = {};
+    if (msg.servers && typeof msg.servers === 'object') {
+      Object.keys(msg.servers).forEach(function(key) {
+        var info = msg.servers[key];
+        toolsServersStatus[key] = {
+          key: key,
+          status: (info && info.status) || 'unknown',
+          tool_count: (info && typeof info.tool_count === 'number') ? info.tool_count : 0,
+          error: (info && info.error) || ''
+        };
+      });
+    }
+    rebuildServerMap();
+    renderToolsSubTabs();
+    if (activeTab === 'tools') renderTools();
+  }
+
+  function rebuildToolCallCounts() {
+    toolCallCounts = {};
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      if (e.event_type === 'tool_call_request' && e.message && e.message.tool) {
+        toolCallCounts[e.message.tool] = (toolCallCounts[e.message.tool] || 0) + 1;
+      }
+    }
+  }
+
+  function updateCallCountBadge(toolName) {
+    var el = toolsScroll.querySelector('[data-tcc="' + toolName.replace(/"/g, '\\"') + '"]');
+    if (!el) return;
+    var count = toolCallCounts[toolName] || 0;
+    el.textContent = count + (count === 1 ? ' call' : ' calls');
+    if (count === 0) {
+      el.classList.add('zero');
+    } else {
+      el.classList.remove('zero');
+    }
+  }
+
+  function rebuildServerMap() {
+    var seen = {};
+    var order = [];
+    // First pass: servers that actually have tools (preserve tool ordering)
+    allTools.forEach(function(t) {
+      if (t.server && !seen[t.server]) {
+        seen[t.server] = true;
+        order.push(t.server);
+      }
+    });
+    // Second pass: configured servers with 0 tools (failed/empty) from status map
+    Object.keys(toolsServersStatus).forEach(function(key) {
+      if (!seen[key]) {
+        seen[key] = true;
+        order.push(key);
+      }
+    });
+    toolsServerOrder = order;
+    toolsServerMap = {};
+    order.forEach(function(key, idx) {
+      toolsServerMap[key] = idx % 6; // 6 color classes
+    });
+  }
+
+  function renderToolsSubTabs() {
+    while (toolsSubtabbar.firstChild) toolsSubtabbar.removeChild(toolsSubtabbar.firstChild);
+
+    var isMulti = toolsServerOrder.length > 1;
+    if (isMulti) {
+      toolsSubtabbar.classList.add('multi-server');
+    } else {
+      toolsSubtabbar.classList.remove('multi-server');
+      toolsSubTab = 'all'; // reset when going back to single-server
+      return;
+    }
+
+    // Validate toolsSubTab is still valid
+    if (toolsSubTab !== 'all' && toolsServerMap[toolsSubTab] === undefined) {
+      toolsSubTab = 'all';
+    }
+
+    // "All Servers" tab
+    var allCount = allTools.length;
+    toolsSubtabbar.appendChild(makeSubTab('all', 'All Servers', allCount, null, null));
+
+    // Per-server tabs
+    toolsServerOrder.forEach(function(serverKey) {
+      var count = allTools.filter(function(t) { return t.server === serverKey; }).length;
+      var info = toolsServersStatus[serverKey];
+      var status = info ? info.status : 'unknown';
+      toolsSubtabbar.appendChild(makeSubTab(serverKey, serverKey, count, status, toolsServerMap[serverKey]));
+    });
+  }
+
+  function makeSubTab(key, label, count, status, colorIdx) {
+    var btn = document.createElement('button');
+    btn.className = 'tools-subtab' + (toolsSubTab === key ? ' active' : '');
+    btn.setAttribute('data-server', key);
+
+    if (status !== null) {
+      var dot = document.createElement('span');
+      dot.className = 'tools-subtab-dot s-' + (status || 'unknown');
+      btn.appendChild(dot);
+    }
+
+    var lbl = document.createElement('span');
+    lbl.textContent = label;
+    btn.appendChild(lbl);
+
+    var pill = document.createElement('span');
+    pill.className = 'tools-subtab-count';
+    pill.textContent = count;
+    btn.appendChild(pill);
+
+    btn.addEventListener('click', function() {
+      toolsSubTab = key;
+      renderToolsSubTabs();
+      renderTools();
+    });
+
+    return btn;
+  }
+
   function toolMatchesFilter(tool, query) {
     if (!query) return true;
-    var hay = ((tool.name || '') + ' ' + (tool.description || '') + ' ' + (tool.title || '')).toLowerCase();
+    var hay = ((tool.name || '') + ' ' + (tool.original_name || '') + ' ' + (tool.description || '') + ' ' + (tool.title || '')).toLowerCase();
     return hay.indexOf(query) !== -1;
   }
 
+  // buildServerDescBanner builds a summary card at the top of the tools scroll
+  // area showing connected server(s), tool counts, and override counts.
+  function buildServerDescBanner(visibleTools) {
+    if (!toolsServerOrder.length) return null;
+
+    var overrideCount = visibleTools.filter(function(t) { return t.has_override; }).length;
+    var banner = document.createElement('div');
+    banner.className = 'server-desc-banner';
+
+    // Show one row per server in current view
+    var serversToShow = toolsSubTab === 'all' ? toolsServerOrder : [toolsSubTab];
+    serversToShow.forEach(function(key) {
+      var info = toolsServersStatus[key] || {};
+      var status = info.status || 'unknown';
+
+      var row = document.createElement('div');
+      row.className = 'server-desc-row';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'server-desc-name';
+      var colorIdx = toolsServerMap[key] !== undefined ? toolsServerMap[key] : 0;
+      nameSpan.className = 'server-desc-name server-badge sc-' + colorIdx;
+      nameSpan.style.height = 'auto';
+      nameSpan.style.fontSize = '11px';
+      nameSpan.style.alignSelf = 'center';
+      nameSpan.textContent = key;
+      row.appendChild(nameSpan);
+
+      var statusSpan = document.createElement('span');
+      statusSpan.className = 'server-desc-status';
+      var dot = document.createElement('span');
+      dot.className = 'server-desc-status-dot s-' + status;
+      statusSpan.appendChild(dot);
+      var toolCount = (info.tool_count !== undefined) ? info.tool_count : visibleTools.filter(function(t){ return t.server === key; }).length;
+      statusSpan.appendChild(document.createTextNode(status + ' · ' + toolCount + ' tool' + (toolCount === 1 ? '' : 's')));
+      row.appendChild(statusSpan);
+
+      banner.appendChild(row);
+    });
+
+    // Override summary line
+    if (overrideCount > 0) {
+      var overrideLine = document.createElement('div');
+      overrideLine.className = 'server-desc-text';
+      overrideLine.textContent = overrideCount + ' tool description' + (overrideCount === 1 ? '' : 's') + ' have been customised and are served to LLM clients instead of the original upstream descriptions.';
+      banner.appendChild(overrideLine);
+    }
+
+    return banner;
+  }
+
   function renderTools() {
-    var query   = toolsFilterTxt;
-    var matched = allTools.filter(function (t) { return toolMatchesFilter(t, query); });
+    var query = toolsFilterTxt;
+    var filtered = toolsSubTab === 'all'
+      ? allTools
+      : allTools.filter(function(t) { return t.server === toolsSubTab; });
+    var matched = filtered.filter(function(t) { return toolMatchesFilter(t, query); });
+    var showServerBadge = toolsSubTab === 'all' && toolsServerOrder.length > 1;
 
     // Update count label
     if (allTools.length === 0) {
       toolsCountLbl.textContent = '';
-    } else if (matched.length === allTools.length) {
-      toolsCountLbl.textContent = allTools.length + (allTools.length === 1 ? ' tool' : ' tools');
+    } else if (matched.length === filtered.length) {
+      toolsCountLbl.textContent = matched.length + (matched.length === 1 ? ' tool' : ' tools');
     } else {
-      toolsCountLbl.textContent = matched.length + ' of ' + allTools.length + ' tools';
+      toolsCountLbl.textContent = matched.length + ' of ' + filtered.length + ' tools';
     }
 
     // Clear scroll area
@@ -2503,7 +3047,30 @@
       return;
     }
 
+    // Server description banner — count overridden tools and show server info.
+    var serverBanner = buildServerDescBanner(matched);
+    if (serverBanner) toolsScroll.appendChild(serverBanner);
+
     if (matched.length === 0) {
+      // Per-server tab with no search query: show server-specific empty state
+      if (toolsSubTab !== 'all' && !query) {
+        var sInfo = toolsServersStatus[toolsSubTab];
+        var isFailed = sInfo && (sInfo.status === 'failed');
+        var errWrap = document.createElement('div');
+        errWrap.className = 'tools-empty';
+        var errTitle = document.createElement('div');
+        errTitle.className = 'tools-empty-title';
+        errTitle.textContent = isFailed ? 'Server failed to connect' : 'No tools available';
+        errWrap.appendChild(errTitle);
+        if (isFailed) {
+          var errHint = document.createElement('div');
+          errHint.className = 'tools-empty-hint';
+          errHint.textContent = (sInfo && sInfo.error) || 'Check that the server command is correct and the process can start. See the Log tab for details.';
+          errWrap.appendChild(errHint);
+        }
+        toolsScroll.appendChild(errWrap);
+        return;
+      }
       var noMatch = document.createElement('div');
       noMatch.className = 'tools-empty';
       var nm1 = document.createElement('div');
@@ -2521,7 +3088,7 @@
     var grid = document.createElement('div');
     grid.className = 'tools-grid';
     for (var i = 0; i < matched.length; i++) {
-      grid.appendChild(buildToolCard(matched[i]));
+      grid.appendChild(buildToolCard(matched[i], showServerBadge));
     }
     toolsScroll.appendChild(grid);
   }
@@ -2559,6 +3126,64 @@
     return wrap;
   }
 
+  // handleToolDescriptionUpdated handles a tool_description_updated SSE event.
+  // It updates the allTools array in-place and patches the visible card if present.
+  function handleToolDescriptionUpdated(msg) {
+    var toolName = msg.tool;
+    var newDesc  = msg.description;
+    if (!toolName) return;
+
+    // Update in allTools array
+    for (var i = 0; i < allTools.length; i++) {
+      if (allTools[i].name === toolName) {
+        allTools[i].description  = newDesc;
+        allTools[i].has_override = true;
+        break;
+      }
+    }
+
+    // Patch the existing card in the DOM if it's rendered
+    var selector = '[data-tool-name="' + toolName.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"]';
+    var card;
+    try { card = toolsScroll.querySelector(selector); } catch (_) { card = null; }
+    if (!card) return;
+
+    // Update description section
+    var descWrap = card.querySelector('.tool-card-desc-wrap');
+    if (descWrap) {
+      card.removeChild(descWrap);
+    }
+    // Re-insert updated description section before schema sections
+    var schemaSection = card.querySelector('.schema-section');
+    var newDescWrap = buildDescSection(newDesc);
+    if (schemaSection) {
+      card.insertBefore(newDescWrap, schemaSection);
+    } else {
+      card.appendChild(newDescWrap);
+    }
+
+    // Add override badge in header if not already present
+    var header = card.querySelector('.tool-card-header');
+    if (header && !card.querySelector('.override-badge')) {
+      var badgesEl = header.querySelector('.tool-card-badges');
+      if (!badgesEl) {
+        badgesEl = document.createElement('div');
+        badgesEl.className = 'tool-card-badges';
+        // Insert before call-count badge
+        var ccBadge = header.querySelector('[data-tcc]');
+        if (ccBadge) {
+          header.insertBefore(badgesEl, ccBadge);
+        } else {
+          header.appendChild(badgesEl);
+        }
+      }
+      var modBadge = makeBadge('modified', 'modified');
+      modBadge.className += ' override-badge';
+      modBadge.title = 'Description has been customised (override active)';
+      badgesEl.appendChild(modBadge);
+    }
+  }
+
   function renderToolsError(msg) {
     while (toolsScroll.firstChild) toolsScroll.removeChild(toolsScroll.firstChild);
     toolsCountLbl.textContent = '';
@@ -2587,17 +3212,22 @@
     toolsScroll.appendChild(wrap);
   }
 
-  function buildToolCard(tool) {
+  var DESC_CLAMP_CHARS = 200; // chars before showing "Show more"
+
+  function buildToolCard(tool, showServerBadge) {
     var card = document.createElement('div');
     card.className = 'tool-card';
+    card.setAttribute('data-tool-name', tool.name || '');
 
     // --- Header row ---
     var header = document.createElement('div');
     header.className = 'tool-card-header';
 
+    var displayName = tool.original_name || tool.name || '(unnamed)';
+
     var nameEl = document.createElement('span');
     nameEl.className = 'tool-card-name';
-    nameEl.textContent = tool.name || '(unnamed)';
+    nameEl.textContent = displayName;
     header.appendChild(nameEl);
 
     if (tool.title) {
@@ -2607,38 +3237,53 @@
       header.appendChild(titleEl);
     }
 
+    // Server badge (only in "All Servers" view with multiple servers)
+    if (showServerBadge && tool.server) {
+      var colorIdx = toolsServerMap[tool.server] !== undefined ? toolsServerMap[tool.server] : 0;
+      var sb = document.createElement('span');
+      sb.className = 'server-badge sc-' + colorIdx;
+      sb.textContent = tool.server;
+      header.appendChild(sb);
+    }
+
     // Annotation badges
     var ann = tool.annotations;
+    var badgesEl = document.createElement('div');
+    badgesEl.className = 'tool-card-badges';
+
     if (ann) {
-      var badgesEl = document.createElement('div');
-      badgesEl.className = 'tool-card-badges';
-
-      if (ann.readOnlyHint === true) {
-        badgesEl.appendChild(makeBadge('read-only', 'readonly'));
-      }
-      if (ann.destructiveHint === true) {
-        badgesEl.appendChild(makeBadge('destructive', 'destructive'));
-      }
-      if (ann.idempotentHint === true) {
-        badgesEl.appendChild(makeBadge('idempotent', 'idempotent'));
-      }
-      if (ann.openWorldHint === true) {
-        badgesEl.appendChild(makeBadge('open-world', 'openworld'));
-      }
-
-      if (badgesEl.childNodes.length > 0) {
-        header.appendChild(badgesEl);
-      }
+      if (ann.readOnlyHint === true)   badgesEl.appendChild(makeBadge('read-only', 'readonly'));
+      if (ann.destructiveHint === true) badgesEl.appendChild(makeBadge('destructive', 'destructive'));
+      if (ann.idempotentHint === true)  badgesEl.appendChild(makeBadge('idempotent', 'idempotent'));
+      if (ann.openWorldHint === true)   badgesEl.appendChild(makeBadge('open-world', 'openworld'));
     }
+
+    // "Modified" badge — shown when this tool has an overridden description.
+    if (tool.has_override) {
+      var modBadge = makeBadge('modified', 'modified');
+      modBadge.className += ' override-badge';
+      modBadge.title = 'Description has been customised (override active)';
+      badgesEl.appendChild(modBadge);
+    }
+
+    if (badgesEl.childNodes.length > 0) {
+      header.appendChild(badgesEl);
+    }
+
+    // Call count badge — keyed by exposed tool name for live updates
+    var callCount = toolCallCounts[tool.name] || 0;
+    var ccBadge = document.createElement('span');
+    ccBadge.className = 'tool-call-count' + (callCount === 0 ? ' zero' : '');
+    ccBadge.setAttribute('data-tcc', tool.name);
+    ccBadge.title = 'Number of times this tool has been called';
+    ccBadge.textContent = callCount + (callCount === 1 ? ' call' : ' calls');
+    header.appendChild(ccBadge);
 
     card.appendChild(header);
 
-    // --- Description ---
+    // --- Description (expandable) ---
     if (tool.description) {
-      var descEl = document.createElement('div');
-      descEl.className = 'tool-card-desc';
-      descEl.textContent = tool.description;
-      card.appendChild(descEl);
+      card.appendChild(buildDescSection(tool.description));
     }
 
     // --- Input Schema ---
@@ -2652,6 +3297,38 @@
     }
 
     return card;
+  }
+
+  // buildDescSection returns a wrapper with the description text and, if long,
+  // a "Show more / Show less" toggle button.
+  function buildDescSection(desc) {
+    var wrap = document.createElement('div');
+    wrap.className = 'tool-card-desc-wrap';
+
+    var descEl = document.createElement('div');
+    descEl.className = 'tool-card-desc';
+    descEl.textContent = desc;
+    wrap.appendChild(descEl);
+
+    // After the element is in the DOM the browser knows its clamped height.
+    // We use a deferred check so the element has been rendered first.
+    var needsExpand = desc.length > DESC_CLAMP_CHARS;
+    if (needsExpand) {
+      descEl.classList.add('collapsed');
+
+      var btn = document.createElement('button');
+      btn.className = 'desc-expand-btn';
+      btn.textContent = 'Show more';
+      btn.type = 'button';
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var collapsed = descEl.classList.toggle('collapsed');
+        btn.textContent = collapsed ? 'Show more' : 'Show less';
+      });
+      wrap.appendChild(btn);
+    }
+
+    return wrap;
   }
 
   function makeBadge(label, cls) {
@@ -2725,11 +3402,18 @@
       });
   }
 
+  function updateApplyBtn() {
+    applyRecsBtn.disabled = (selectedRecs.size === 0);
+  }
+
   function renderAnalysis(report) {
     var s = report.status;
     analysisStatusText.textContent = statusLabel(report);
     saveReportBtn.disabled = (s !== 'complete');
     runAnalysisBtn.disabled = (s === 'running');
+    // Reset selection when a new report is rendered.
+    selectedRecs.clear();
+    updateApplyBtn();
 
     while (analysisScroll.firstChild) analysisScroll.removeChild(analysisScroll.firstChild);
 
@@ -2894,12 +3578,30 @@
     filtered.forEach(function (rec) { container.appendChild(buildRecCard(rec)); });
   }
 
+  // Categories whose improved_text can be applied to live tool definitions.
+  var APPLICABLE_CATS = { description: true, parameter: true };
+
   function buildRecCard(rec) {
     var card = document.createElement('div');
     card.className = 'rec-card pri-' + (rec.priority || 'low');
+    var isApplicable = !!(APPLICABLE_CATS[rec.category] && rec.improved_text && rec.tool_name);
 
     // Header
     var hdr = document.createElement('div'); hdr.className = 'rec-header';
+
+    // Checkbox (only for applicable categories with improved text).
+    if (isApplicable) {
+      var cbWrap = document.createElement('span'); cbWrap.className = 'rec-checkbox-wrap';
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.className = 'rec-checkbox';
+      cb.checked = selectedRecs.has(rec.id);
+      cb.addEventListener('change', function (e) {
+        e.stopPropagation(); // don't expand/collapse the card
+        if (cb.checked) { selectedRecs.add(rec.id); } else { selectedRecs.delete(rec.id); }
+        updateApplyBtn();
+      });
+      cbWrap.appendChild(cb); hdr.appendChild(cbWrap);
+    }
+
     var priB = document.createElement('span'); priB.className = 'rec-priority ' + (rec.priority || 'low');
     priB.textContent = (rec.priority || 'low').toUpperCase(); hdr.appendChild(priB);
     var catB = document.createElement('span'); catB.className = 'rec-category cat-' + (rec.category || '');
@@ -2907,6 +3609,12 @@
     if (rec.tool_name) {
       var tn = document.createElement('span'); tn.className = 'rec-tool-name'; tn.textContent = rec.tool_name; hdr.appendChild(tn);
     }
+
+    // Applied badge (shown when this recommendation has been applied).
+    if (appliedRecs.has(rec.id)) {
+      var badge = document.createElement('span'); badge.className = 'rec-applied-badge'; badge.textContent = 'Applied'; hdr.appendChild(badge);
+    }
+
     var arrow = document.createElement('span'); arrow.className = 'rec-expand-arrow'; arrow.textContent = '▶'; hdr.appendChild(arrow);
     card.appendChild(hdr);
 
@@ -2978,6 +3686,69 @@
         renderAnalysisState('error', 'Failed to start analysis: ' + err.message);
       });
   }
+
+  function applySelectedRecommendations() {
+    if (selectedRecs.size === 0) return;
+    var ids = Array.from(selectedRecs);
+    applyRecsBtn.disabled = true;
+    applyRecsBtn.textContent = 'Applying…';
+
+    fetch('/api/apply-recommendations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recommendation_ids: ids }),
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (result) {
+        var appliedList = result.applied || [];
+        var errorList   = result.errors  || [];
+
+        // Mark as applied and clear from selection.
+        appliedList.forEach(function (id) {
+          appliedRecs.add(id);
+          selectedRecs.delete(id);
+        });
+
+        // Build status message.
+        var parts = [];
+        if (appliedList.length > 0) parts.push(appliedList.length + ' applied');
+        if ((result.skipped || []).length > 0) parts.push(result.skipped.length + ' skipped');
+        if (errorList.length > 0) {
+          parts.push(errorList.length + ' error(s): ' + errorList.map(function(e){return e.error;}).join('; '));
+        }
+        var msg = parts.length > 0 ? parts.join(', ') : 'done';
+        analysisStatusText.textContent = 'Apply complete — ' + msg + '. Updated descriptions are now live.';
+
+        // Refresh tool list so the Tools tab shows updated descriptions & badges.
+        if (appliedList.length > 0) {
+          fetch('/api/tools')
+            .then(function(res) { return res.ok ? res.json() : null; })
+            .then(function(data) {
+              if (data && Array.isArray(data.tools)) {
+                allTools = data.tools;
+                if (activeTab === 'tools') renderTools();
+              }
+            })
+            .catch(function() {});
+        }
+
+        // Re-render cards to show applied badges and clear checkboxes.
+        if (currentReport && currentReport.recommendations) {
+          var container = analysisScroll.querySelector('.an-recs-list');
+          if (container) { renderRecCards(container, currentReport.recommendations); }
+        }
+        updateApplyBtn();
+      })
+      .catch(function (err) {
+        analysisStatusText.textContent = 'Apply failed: ' + err.message;
+      })
+      .finally(function () {
+        applyRecsBtn.textContent = 'Apply Selected';
+        updateApplyBtn();
+      });
+  }
+
+  applyRecsBtn.addEventListener('click', applySelectedRecommendations);
 
   function buildSavedReport(report) {
     var recs = report.recommendations || [];
@@ -3472,7 +4243,8 @@
     Object.keys(elMap).forEach(function (k) { liveElMap[k] = elMap[k]; });
     liveIdSeq     = idSeq;
     liveTools     = allTools.slice();
-    liveReport    = currentReport;
+    liveReport         = currentReport;
+    liveToolCallCounts = toolCallCounts;
 
     snapshotMode  = true;
     snapshotData  = snap;
@@ -3517,7 +4289,9 @@
     // Snapshot tool catalog.
     allTools = (snap.tool_catalog && Array.isArray(snap.tool_catalog.tools))
       ? snap.tool_catalog.tools : [];
-    if (activeTab === 'tools') renderTools();
+    rebuildServerMap();
+    rebuildToolCallCounts();
+    if (activeTab === 'tools') { renderToolsSubTabs(); renderTools(); }
 
     // Snapshot analysis.
     currentReport = snap.analysis || null;
@@ -3541,8 +4315,10 @@
     entries      = liveEntries;
     elMap        = liveElMap;
     idSeq        = liveIdSeq;
-    allTools     = liveTools;
-    currentReport = liveReport;
+    allTools         = liveTools;
+    currentReport    = liveReport;
+    toolCallCounts   = liveToolCallCounts;
+    rebuildServerMap();
 
     // Re-render log feed from live entries.
     while (feed.firstChild) feed.removeChild(feed.firstChild);
@@ -3558,7 +4334,7 @@
     }
     refreshCount();
 
-    if (activeTab === 'tools') renderTools();
+    if (activeTab === 'tools') { renderToolsSubTabs(); renderTools(); }
     if (activeTab === 'analysis' && currentReport) renderAnalysis(currentReport);
   }
 

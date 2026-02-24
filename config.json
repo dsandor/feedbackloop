@@ -1,17 +1,34 @@
 {
   "mcpServers": {
+    "HackerNews": {
+      "args": [
+        "mcp-hn"
+      ],
+      "command": "uvx",
+      "type": "STDIO"
+    },
+    "airbnb": {
+      "args": [
+        "-y",
+        "@openbnb/mcp-server-airbnb"
+      ],
+      "command": "npx"
+    },
     "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest"]
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ],
+      "command": "npx"
     }
   },
   "settings": {
-    "model": "claude-sonnet-4-6",
-    "transport": "stdio",
+    "apiKey": "",
     "httpHost": "localhost",
     "httpPort": 3000,
-    "uiPort": 0,
-    "apiKey": "",
-    "server": ""
+    "maxSnapshotLogLines": 500,
+    "model": "claude-sonnet-4-6",
+    "transport": "stdio",
+    "uiPort": 0
   }
 }

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 
@@ -25,7 +26,7 @@ var (
 	uiPort     = flag.Int("ui-port", 0, "UI server port (0 = auto-select from 3070-3099)")
 	apiKey     = flag.String("api-key", "", "Anthropic API key (overrides ANTHROPIC_API_KEY env var)")
 	configFile = flag.String("config", "config.json", "Path to feedbackloop config file (JSON, Claude Desktop mcpServers format)")
-	serverName = flag.String("server", "", "Name of the mcpServers entry to proxy (defaults to first entry)")
+	serverName = flag.String("server", "", "Name of the mcpServers entry to proxy (defaults to all entries)")
 )
 
 func main() {
@@ -159,7 +160,7 @@ func main() {
 		"http_port": *httpPort,
 	})
 
-	// Load config and resolve upstream server command (reuse earlyConfig if already valid).
+	// Load config and resolve upstream server set (reuse earlyConfig if already valid).
 	cfg := earlyConfig
 	if cfg == nil {
 		var cfgErr error
@@ -170,38 +171,56 @@ func main() {
 		}
 	}
 
-	upstreamCmd, upstreamArgs, resolveErr := cfg.ResolveServer(*serverName)
+	servers, resolveErr := cfg.ResolveAllServers(*serverName)
 	if resolveErr != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: %v\n", resolveErr)
 		os.Exit(1)
 	}
 
-	log.LogEvent("upstream_configured", "main", map[string]interface{}{
-		"command": upstreamCmd,
-		"args":    upstreamArgs,
-		"server":  *serverName,
-		"config":  *configFile,
+	// Build the pool from the resolved servers map.
+	pool := proxy.NewUpstreamPool(log)
+	serverKeys := make([]string, 0, len(servers))
+	for key, srv := range servers {
+		pool.Add(key, srv.Command, srv.Args)
+		serverKeys = append(serverKeys, key)
+	}
+
+	log.LogEvent("upstream_pool_configured", "main", map[string]interface{}{
+		"server_count": len(servers),
+		"servers":      serverKeys,
+		"multi_server": len(servers) > 1,
 	})
 
-	// Create upstream manager
-	upstream := proxy.NewUpstreamManager(log, upstreamCmd, upstreamArgs)
-
-	// Connect to upstream server
-	if err := upstream.Connect(ctx); err != nil {
+	// Connect to all upstream servers concurrently.
+	if err := pool.ConnectAll(ctx); err != nil {
 		log.LogErrorEvent("startup_failed", "main", map[string]interface{}{
 			"error":  err.Error(),
-			"reason": "upstream_connection_failed",
+			"reason": "all_upstream_connections_failed",
 		})
 		exitCode = 1
 		return
 	}
-	defer func() {
-		if err := upstream.Close(); err != nil {
-			log.LogErrorEvent("cleanup_failed", "main", map[string]interface{}{
-				"error": err.Error(),
-			})
+	defer pool.CloseAll()
+
+	// Create a shared ToolCache that persists across ProxyServer instances.
+	// This allows description overrides applied via the UI to survive client
+	// reconnects (especially in HTTP/SSE mode where NewProxyServer is called
+	// per request).
+	sharedToolCache := proxy.NewToolCache(log)
+
+	// Configure override persistence: load any previously saved overrides from
+	// disk so they are re-applied after a restart.
+	if home, err := os.UserHomeDir(); err == nil {
+		overridesDir := filepath.Join(home, ".feedbackloop")
+		if mkErr := os.MkdirAll(overridesDir, 0755); mkErr == nil {
+			sharedToolCache.SetOverridesPath(filepath.Join(overridesDir, "overrides.json"))
 		}
-	}()
+	}
+
+	// Wire the shared cache into the UI server so it can apply recommendations.
+	if uiServer != nil {
+		uiServer.SetToolCache(sharedToolCache)
+	}
 
 	// Log selected transport mode
 	log.LogEvent("transport_mode_selected", "main", map[string]interface{}{
@@ -211,14 +230,14 @@ func main() {
 	// Route to appropriate transport
 	switch *transport {
 	case "stdio":
-		if err := runStdioMode(ctx, upstream, log); err != nil {
+		if err := runStdioMode(ctx, pool, log, sharedToolCache); err != nil {
 			log.LogErrorEvent("stdio_mode_error", "main", map[string]interface{}{
 				"error": err.Error(),
 			})
 			exitCode = 1
 		}
 	case "http":
-		if err := runHTTPMode(ctx, upstream, log, *httpHost, *httpPort); err != nil {
+		if err := runHTTPMode(ctx, pool, log, *httpHost, *httpPort, sharedToolCache); err != nil {
 			log.LogErrorEvent("http_mode_error", "main", map[string]interface{}{
 				"error": err.Error(),
 			})
@@ -231,14 +250,14 @@ func main() {
 	})
 }
 
-func runStdioMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger) error {
+func runStdioMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Logger, sharedCache *proxy.ToolCache) error {
 	clientInfo := &proxy.ClientInfo{
 		ClientID:  logger.GenerateCorrelationID(),
 		Transport: "stdio",
 	}
 
-	// Create proxy server
-	proxyServer, err := proxy.NewProxyServer(upstream, log, clientInfo)
+	// Create proxy server using the shared cache so overrides persist.
+	proxyServer, err := proxy.NewProxyServer(pool, log, clientInfo, sharedCache)
 	if err != nil {
 		return fmt.Errorf("proxy server creation failed: %w", err)
 	}
@@ -255,7 +274,7 @@ func runStdioMode(ctx context.Context, upstream *proxy.UpstreamManager, log *log
 	return proxyServer.Run(ctx, stdioTransport)
 }
 
-func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logger.Logger, host string, port int) error {
+func runHTTPMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Logger, host string, port int, sharedCache *proxy.ToolCache) error {
 	// Create SSE handler with getServer function
 	sseHandler := mcp.NewSSEHandler(func(req *http.Request) *mcp.Server {
 		// Extract client metadata from HTTP request
@@ -273,9 +292,9 @@ func runHTTPMode(ctx context.Context, upstream *proxy.UpstreamManager, log *logg
 			Headers:    headers,
 		}
 
-		// For now, create a new proxy server per request
-		// (Alternative: reuse singleton ProxyServer if thread-safe)
-		proxyServer, err := proxy.NewProxyServer(upstream, log, clientInfo)
+		// Create a new proxy server per request, sharing the persistent tool cache
+		// so that description overrides are applied on every reconnect.
+		proxyServer, err := proxy.NewProxyServer(pool, log, clientInfo, sharedCache)
 		if err != nil {
 			log.LogErrorEvent("proxy_server_creation_failed", "http_server", map[string]interface{}{
 				"error": err.Error(),

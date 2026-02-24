@@ -17,18 +17,32 @@ import (
 	"github.com/dsandor/feedbackloop/internal/logger"
 )
 
+// ToolUpdater is a narrow interface that allows the UI server to update a tool's
+// description in the proxy tool cache without creating an import cycle.
+type ToolUpdater interface {
+	UpdateToolDescription(toolName, newDescription string) error
+	// GetOverrides returns the current map of tool name → override description.
+	// Used to annotate /api/tools responses with has_override flags.
+	GetOverrides() map[string]string
+}
+
 // Server serves the web UI and streams log entries via SSE.
 type Server struct {
 	log         *logger.Logger
 	webFS       fs.FS
 	port        int
 	analyzer    *analysis.Analyzer
+	toolCache   ToolUpdater     // optional, allows applying analysis recommendations
 	toolMu      sync.RWMutex
 	toolCatalog json.RawMessage // cached payload from the most recent tool_catalog log event
 	catalogPath string          // path to persist tool catalog JSON on disk
 	configPath  string          // path to the feedbackloop config.json
 	llmModel    string          // currently active LLM model ID
 	apiKey      string          // Anthropic API key (used for /api/models proxy)
+
+	// Per-server status derived from tool_catalog events.
+	serversMu     sync.RWMutex
+	serversStatus json.RawMessage // cached servers summary from the most recent tool_catalog event
 
 	// Log buffer for snapshot capture.
 	logBufMu  sync.RWMutex
@@ -96,6 +110,9 @@ func New(log *logger.Logger, webFS fs.FS, analyzer *analysis.Analyzer, port int,
 // Port returns the port the server will listen on.
 func (s *Server) Port() int { return s.port }
 
+// SetToolCache wires up the tool cache so the UI server can apply recommendations.
+func (s *Server) SetToolCache(tc ToolUpdater) { s.toolCache = tc }
+
 // Start launches the HTTP server in the background.
 // It shuts down gracefully when ctx is cancelled.
 func (s *Server) Start(ctx context.Context) error {
@@ -112,12 +129,14 @@ func (s *Server) Start(ctx context.Context) error {
 	mux.Handle("/", http.FileServer(http.FS(webRoot)))
 	mux.HandleFunc("/events", s.handleSSE)
 	mux.HandleFunc("/api/tools", s.handleTools)
+	mux.HandleFunc("/api/servers", s.handleServers)
 	mux.HandleFunc("/api/analysis", s.handleGetAnalysis)
 	mux.HandleFunc("/api/analyze", s.handleRunAnalysis)
 	mux.HandleFunc("/api/settings", s.handleSettings)
 	mux.HandleFunc("/api/models", s.handleModels)
 	mux.HandleFunc("/api/snapshots", s.handleListSnapshots)
 	mux.HandleFunc("/api/snapshot", s.handleSnapshot)
+	mux.HandleFunc("/api/apply-recommendations", s.handleApplyRecommendations)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", s.port),
@@ -225,12 +244,68 @@ func (s *Server) watchToolCatalog(ctx context.Context, ch chan logger.LogEntry, 
 					s.toolCatalog = data
 					s.toolMu.Unlock()
 					s.savePersistedCatalog(data)
+
+					// Extract the servers field for the /api/servers endpoint.
+					s.updateServersStatus(data)
 				}
 			}
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+// updateServersStatus parses a raw tool_catalog JSON payload and rebuilds the
+// cached servers-status JSON used by GET /api/servers.
+func (s *Server) updateServersStatus(catalogData []byte) {
+	var catalog struct {
+		Tools []struct {
+			Server string `json:"server"`
+		} `json:"tools"`
+		Total   int                            `json:"total"`
+		Servers map[string]map[string]interface{} `json:"servers"`
+	}
+	if err := json.Unmarshal(catalogData, &catalog); err != nil {
+		return
+	}
+
+	type serverItem struct {
+		Key        string `json:"key"`
+		Status     string `json:"status"`
+		ToolCount  int    `json:"tool_count"`
+		Error      string `json:"error,omitempty"`
+	}
+
+	// servers field may be absent (single-server legacy path).
+	items := make([]serverItem, 0, len(catalog.Servers))
+	for key, info := range catalog.Servers {
+		item := serverItem{Key: key}
+		if v, ok := info["status"].(string); ok {
+			item.Status = v
+		}
+		if v, ok := info["tool_count"].(float64); ok {
+			item.ToolCount = int(v)
+		}
+		if v, ok := info["error"].(string); ok {
+			item.Error = v
+		}
+		items = append(items, item)
+	}
+
+	multiServer := len(catalog.Servers) > 1
+
+	out, err := json.Marshal(map[string]interface{}{
+		"servers":      items,
+		"multi_server": multiServer,
+		"total_tools":  catalog.Total,
+	})
+	if err != nil {
+		return
+	}
+
+	s.serversMu.Lock()
+	s.serversStatus = out
+	s.serversMu.Unlock()
 }
 
 // watchLogBuffer appends every log entry to the in-memory circular buffer used for snapshots.
@@ -429,7 +504,80 @@ func (s *Server) handleTools(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"tools":[],"total":0}`)) //nolint:errcheck
 		return
 	}
+
+	// Annotate with current in-memory overrides so the UI always reflects the
+	// latest applied descriptions and can display the "modified" badge, even if
+	// the cached catalog predates the most-recent override operation.
+	if s.toolCache != nil {
+		overrides := s.toolCache.GetOverrides()
+		if len(overrides) > 0 {
+			if annotated, err := annotateWithOverrides(catalog, overrides); err == nil {
+				catalog = annotated
+			}
+		}
+	}
+
 	w.Write(catalog) //nolint:errcheck
+}
+
+// annotateWithOverrides parses a raw tool-catalog JSON payload, updates the
+// description of any tool that has an override, marks it with has_override:true,
+// and returns the re-marshalled JSON.
+func annotateWithOverrides(catalog json.RawMessage, overrides map[string]string) (json.RawMessage, error) {
+	// Parse just enough structure to iterate over tools.
+	var parsed struct {
+		Tools   []map[string]interface{} `json:"tools"`
+		Total   int                      `json:"total"`
+		Servers interface{}              `json:"servers,omitempty"`
+	}
+	if err := json.Unmarshal(catalog, &parsed); err != nil {
+		return nil, err
+	}
+
+	changed := false
+	for i, tool := range parsed.Tools {
+		name, _ := tool["name"].(string)
+		if desc, hasOverride := overrides[name]; hasOverride {
+			parsed.Tools[i]["has_override"] = true
+			parsed.Tools[i]["description"] = desc
+			changed = true
+		}
+	}
+
+	if !changed {
+		return catalog, nil
+	}
+
+	result := map[string]interface{}{
+		"tools": parsed.Tools,
+		"total": len(parsed.Tools),
+	}
+	if parsed.Servers != nil {
+		result["servers"] = parsed.Servers
+	}
+	return json.Marshal(result)
+}
+
+// handleServers returns per-server connection status and tool counts.
+func (s *Server) handleServers(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	s.serversMu.RLock()
+	status := s.serversStatus
+	s.serversMu.RUnlock()
+
+	if status == nil {
+		w.Write([]byte(`{"servers":[],"multi_server":false,"total_tools":0}`)) //nolint:errcheck
+		return
+	}
+	w.Write(status) //nolint:errcheck
 }
 
 func (s *Server) handleGetAnalysis(w http.ResponseWriter, r *http.Request) {
@@ -481,6 +629,114 @@ func (s *Server) handleRunAnalysis(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	w.Write([]byte(`{"status":"running"}`)) //nolint:errcheck
+}
+
+// applyResult holds the outcome of a single recommendation application attempt.
+type applyResult struct {
+	ID    string `json:"id"`
+	Error string `json:"error"`
+}
+
+// handleApplyRecommendations processes POST /api/apply-recommendations.
+// Request body: {"recommendation_ids": ["rec_001", "rec_002"]}
+// Response:     {"applied": ["rec_001"], "skipped": ["rec_003"], "errors": [{...}]}
+func (s *Server) handleApplyRecommendations(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if s.toolCache == nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte(`{"error":"tool cache not available"}`)) //nolint:errcheck
+		return
+	}
+
+	if s.analyzer == nil {
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte(`{"error":"analyzer not available"}`)) //nolint:errcheck
+		return
+	}
+
+	body, err := io.ReadAll(io.LimitReader(r.Body, 64*1024))
+	if err != nil {
+		http.Error(w, "cannot read body", http.StatusBadRequest)
+		return
+	}
+	defer r.Body.Close()
+
+	var req struct {
+		RecommendationIDs []string `json:"recommendation_ids"`
+	}
+	if err := json.Unmarshal(body, &req); err != nil {
+		http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if len(req.RecommendationIDs) == 0 {
+		w.Write([]byte(`{"applied":[],"skipped":[],"errors":[]}`)) //nolint:errcheck
+		return
+	}
+
+	// Build a lookup map from the current report.
+	report := s.analyzer.GetReport()
+	recByID := make(map[string]analysis.Recommendation, len(report.Recommendations))
+	for _, rec := range report.Recommendations {
+		recByID[rec.ID] = rec
+	}
+
+	// Categories that can be applied to tool descriptions.
+	applicable := map[string]bool{
+		"description": true,
+		"parameter":   true,
+	}
+
+	var applied []string
+	var skipped []string
+	var errors []applyResult
+
+	for _, id := range req.RecommendationIDs {
+		rec, found := recByID[id]
+		if !found {
+			errors = append(errors, applyResult{ID: id, Error: "recommendation not found in current report"})
+			continue
+		}
+		if !applicable[rec.Category] {
+			skipped = append(skipped, id)
+			continue
+		}
+		if rec.ImprovedText == "" {
+			skipped = append(skipped, id)
+			continue
+		}
+		if err := s.toolCache.UpdateToolDescription(rec.ToolName, rec.ImprovedText); err != nil {
+			errors = append(errors, applyResult{ID: id, Error: err.Error()})
+			continue
+		}
+		applied = append(applied, id)
+	}
+
+	// Ensure non-nil slices for clean JSON output.
+	if applied == nil {
+		applied = []string{}
+	}
+	if skipped == nil {
+		skipped = []string{}
+	}
+	if errors == nil {
+		errors = []applyResult{}
+	}
+
+	out, _ := json.Marshal(map[string]interface{}{
+		"applied":  applied,
+		"skipped":  skipped,
+		"errors":   errors,
+	})
+	w.Write(out) //nolint:errcheck
 }
 
 // settingsPayload is the shape exchanged by GET and POST /api/settings.
