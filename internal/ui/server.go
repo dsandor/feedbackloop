@@ -739,6 +739,33 @@ func (s *Server) handleApplyRecommendations(w http.ResponseWriter, r *http.Reque
 	w.Write(out) //nolint:errcheck
 }
 
+// oauthSaveRequest is the writable OAuth fields sent by the UI on POST /api/settings.
+// ClientSecret is accepted so users can set it, but it is never echoed back.
+type oauthSaveRequest struct {
+	Enabled            bool     `json:"enabled"`
+	Mode               string   `json:"mode"`
+	Issuer             string   `json:"issuer"`
+	JWKSUri            string   `json:"jwksUri"`
+	Audience           string   `json:"audience"`
+	RequiredScopes     []string `json:"requiredScopes"`
+	IntrospectEndpoint string   `json:"introspectEndpoint"`
+	ClientID           string   `json:"clientId"`
+	ClientSecret       string   `json:"clientSecret"`
+}
+
+// oauthPayload is the OAuth section of settingsPayload.
+type oauthPayload struct {
+	Enabled            bool     `json:"enabled"`
+	Mode               string   `json:"mode"`
+	Issuer             string   `json:"issuer"`
+	JWKSUri            string   `json:"jwksUri"`
+	Audience           string   `json:"audience"`
+	RequiredScopes     []string `json:"requiredScopes"`
+	IntrospectEndpoint string   `json:"introspectEndpoint"`
+	ClientID           string   `json:"clientId"`
+	ClientSecretSet    bool     `json:"clientSecretSet"` // never echo the secret back
+}
+
 // settingsPayload is the shape exchanged by GET and POST /api/settings.
 type settingsPayload struct {
 	ConfigPath          string                 `json:"config_path"`
@@ -751,6 +778,7 @@ type settingsPayload struct {
 	UIPort              int                    `json:"uiPort"`
 	Server              string                 `json:"server"`
 	MaxSnapshotLogLines int                    `json:"max_snapshot_log_lines"`
+	OAuth               oauthPayload           `json:"oauth"`
 }
 
 func (s *Server) handleSettings(w http.ResponseWriter, r *http.Request) {
@@ -812,6 +840,26 @@ func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
+			// OAuth section — stored at top level of config.json.
+			if oauthRaw, ok := raw["oauth"].(map[string]interface{}); ok {
+				payload.OAuth.Enabled, _ = oauthRaw["enabled"].(bool)
+				payload.OAuth.Mode, _ = oauthRaw["mode"].(string)
+				payload.OAuth.Issuer, _ = oauthRaw["issuer"].(string)
+				payload.OAuth.JWKSUri, _ = oauthRaw["jwksUri"].(string)
+				payload.OAuth.Audience, _ = oauthRaw["audience"].(string)
+				payload.OAuth.IntrospectEndpoint, _ = oauthRaw["introspectEndpoint"].(string)
+				payload.OAuth.ClientID, _ = oauthRaw["clientId"].(string)
+				if cs, _ := oauthRaw["clientSecret"].(string); cs != "" {
+					payload.OAuth.ClientSecretSet = true
+				}
+				if scopes, ok := oauthRaw["requiredScopes"].([]interface{}); ok {
+					for _, s := range scopes {
+						if sv, ok := s.(string); ok {
+							payload.OAuth.RequiredScopes = append(payload.OAuth.RequiredScopes, sv)
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -841,6 +889,7 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		APIKey              string                 `json:"apiKey"`
 		Server              string                 `json:"server"`
 		MaxSnapshotLogLines int                    `json:"maxSnapshotLogLines"`
+		OAuth               *oauthSaveRequest      `json:"oauth"`
 	}
 	if err := json.Unmarshal(body, &req); err != nil {
 		http.Error(w, "invalid JSON: "+err.Error(), http.StatusBadRequest)
@@ -912,6 +961,46 @@ func (s *Server) handleSaveSettings(w http.ResponseWriter, r *http.Request) {
 		rawCfg["settings"] = settings
 	} else {
 		delete(rawCfg, "settings")
+	}
+
+	// OAuth — stored at top level of config.json (not inside "settings") so
+	// the main process can load it independently.
+	if req.OAuth != nil {
+		oauth := map[string]interface{}{
+			"enabled": req.OAuth.Enabled,
+		}
+		if req.OAuth.Mode != "" {
+			oauth["mode"] = req.OAuth.Mode
+		}
+		if req.OAuth.Issuer != "" {
+			oauth["issuer"] = req.OAuth.Issuer
+		}
+		if req.OAuth.JWKSUri != "" {
+			oauth["jwksUri"] = req.OAuth.JWKSUri
+		}
+		if req.OAuth.Audience != "" {
+			oauth["audience"] = req.OAuth.Audience
+		}
+		if len(req.OAuth.RequiredScopes) > 0 {
+			oauth["requiredScopes"] = req.OAuth.RequiredScopes
+		} else {
+			delete(oauth, "requiredScopes")
+		}
+		if req.OAuth.IntrospectEndpoint != "" {
+			oauth["introspectEndpoint"] = req.OAuth.IntrospectEndpoint
+		}
+		if req.OAuth.ClientID != "" {
+			oauth["clientId"] = req.OAuth.ClientID
+		}
+		// Only write the secret if a non-empty value was provided; preserves existing.
+		if req.OAuth.ClientSecret != "" {
+			oauth["clientSecret"] = req.OAuth.ClientSecret
+		} else if existing, ok := rawCfg["oauth"].(map[string]interface{}); ok {
+			if cs, _ := existing["clientSecret"].(string); cs != "" {
+				oauth["clientSecret"] = cs
+			}
+		}
+		rawCfg["oauth"] = oauth
 	}
 
 	out, err := json.MarshalIndent(rawCfg, "", "  ")

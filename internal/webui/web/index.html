@@ -1316,11 +1316,50 @@
     }
 
     /* ===== SETTINGS VIEW ===== */
-    .settings-panel { flex:1; display:none; flex-direction:column; overflow:hidden; }
+    .settings-panel { flex:1; display:none; flex-direction:row; overflow:hidden; }
     .settings-panel.active { display:flex; }
 
+    /* Settings sidebar nav */
+    .settings-nav {
+      width: 164px; min-width: 164px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      padding: 14px 8px;
+      display: flex; flex-direction: column; gap: 2px;
+      overflow-y: auto; flex-shrink: 0;
+    }
+    .settings-nav-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      border: none; background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px; font-family: var(--font-sans); font-weight: 500;
+      border-radius: var(--radius-md);
+      cursor: pointer; text-align: left; width: 100%;
+      transition: background 0.12s, color 0.12s;
+    }
+    .settings-nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .settings-nav-item.active { background: var(--bg-active); color: var(--text-primary); }
+    .settings-nav-item svg { flex-shrink: 0; opacity: 0.65; }
+    .settings-nav-item.active svg { opacity: 1; }
+
+    /* Settings content area */
+    .settings-content-area {
+      flex: 1; display: flex; flex-direction: column; overflow: hidden;
+    }
+
     .settings-scroll {
-      flex: 1; overflow-y: auto; padding: 24px 28px;
+      flex: 1; overflow-y: auto; padding: 20px 24px;
+    }
+
+    /* Tab panes */
+    .settings-tab-pane { display: none; }
+    .settings-tab-pane.active { display: block; }
+
+    /* Save bar at bottom */
+    .settings-save-bar {
+      flex-shrink: 0; border-top: 1px solid var(--border-subtle);
+      padding: 10px 24px; background: var(--bg-surface);
     }
 
     .settings-section {
@@ -1407,6 +1446,155 @@
     .settings-apikey-notice {
       font-size: 12px; color: var(--text-muted); padding: 6px 0;
     }
+
+    /* ===== MCP SERVER EDITOR ===== */
+    .mcp-editor { max-width: 680px; }
+    .mcp-editor-hdr {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .mcp-editor-count { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+    .mcp-add-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 26px; padding: 0 12px;
+      background: var(--bg-elevated); color: var(--text-secondary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-sm);
+      font-size: 11px; font-family: var(--font-sans); font-weight: 500;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .mcp-add-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border-focus); }
+    .mcp-list { display: flex; flex-direction: column; gap: 6px; }
+    .mcp-card {
+      background: var(--bg-elevated); border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md); overflow: hidden; transition: border-color 0.15s;
+    }
+    .mcp-card-view { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+    .mcp-card-info { flex: 1; min-width: 0; }
+    .mcp-card-name-row { display: flex; align-items: center; gap: 7px; margin-bottom: 2px; }
+    .mcp-card-name { font-size: 12px; font-weight: 600; color: var(--text-primary); font-family: var(--font-mono); }
+    .mcp-card-preview {
+      font-size: 11px; color: var(--text-muted); font-family: var(--font-mono);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mcp-card-btns { display: flex; gap: 4px; flex-shrink: 0; }
+    .mcp-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      height: 26px; padding: 0 10px;
+      background: var(--bg-surface); color: var(--text-secondary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-sm);
+      font-size: 11px; font-family: var(--font-sans); font-weight: 500;
+      cursor: pointer; transition: all 0.12s;
+    }
+    .mcp-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .mcp-btn.icon-only { width: 26px; padding: 0; justify-content: center; }
+    .mcp-btn.danger:hover { background: rgba(217,85,85,0.08); color: var(--badge-error-text); border-color: var(--badge-error-border); }
+    .mcp-card-edit {
+      padding: 14px 14px 12px; border-top: 1px solid var(--border-subtle); background: var(--bg-surface);
+    }
+    .mcp-card-edit:first-child { border-top: none; }
+    .mcp-form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .mcp-form-field { display: flex; flex-direction: column; gap: 4px; }
+    .mcp-form-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .mcp-form-input {
+      height: 30px; padding: 0 9px;
+      background: var(--bg-elevated); color: var(--text-primary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-sm);
+      font-size: 12px; font-family: var(--font-mono);
+      outline: none; transition: border-color 0.12s; width: 100%;
+    }
+    .mcp-form-input:focus { border-color: var(--border-focus); }
+    .mcp-form-section { margin-bottom: 10px; }
+    .mcp-form-section-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+    .mcp-dynamic-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
+    .mcp-dynamic-row { display: flex; gap: 4px; align-items: center; }
+    .mcp-dynamic-row .mcp-form-input { flex: 1; }
+    .mcp-env-key { width: 130px !important; flex: 0 0 130px !important; }
+    .mcp-env-sep { font-size: 12px; color: var(--text-muted); flex-shrink: 0; }
+    .mcp-remove-item-btn {
+      width: 22px; height: 22px; flex-shrink: 0;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: transparent; border: none; border-radius: var(--radius-sm);
+      color: var(--text-muted); cursor: pointer; font-size: 14px; line-height: 1;
+      transition: all 0.12s;
+    }
+    .mcp-remove-item-btn:hover { color: var(--badge-error-text); background: rgba(217,85,85,0.08); }
+    .mcp-add-item-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      height: 24px; padding: 0 8px;
+      background: transparent; color: var(--text-muted);
+      border: 1px dashed var(--border-muted); border-radius: var(--radius-sm);
+      font-size: 11px; font-family: var(--font-sans); cursor: pointer; transition: all 0.12s;
+    }
+    .mcp-add-item-btn:hover { color: var(--text-secondary); border-color: var(--border-focus); }
+    .mcp-card-form-footer {
+      display: flex; align-items: center; gap: 6px;
+      padding-top: 10px; border-top: 1px solid var(--border-subtle); margin-top: 8px;
+    }
+    .mcp-empty {
+      text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 12px;
+      border: 1px dashed var(--border-muted); border-radius: var(--radius-md);
+    }
+
+    /* ===== JSON EDITOR ===== */
+    .json-editor {
+      border: 1px solid var(--border-muted);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-elevated);
+      max-width: 680px;
+    }
+    .json-editor-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: var(--bg-surface);
+      gap: 8px; min-height: 32px;
+    }
+    .json-status-badge {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; font-family: var(--font-mono);
+      color: #22c55e;
+    }
+    .json-status-badge.invalid { color: var(--badge-error-text); }
+    .json-status-badge svg { flex-shrink: 0; }
+    .json-editor-actions { display: flex; gap: 6px; }
+    .json-action-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 24px; padding: 0 10px;
+      background: var(--bg-elevated); color: var(--text-secondary);
+      border: 1px solid var(--border-muted); border-radius: var(--radius-sm);
+      font-size: 11px; font-family: var(--font-sans); font-weight: 500;
+      cursor: pointer; transition: background 0.12s, color 0.12s;
+    }
+    .json-action-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .json-editor-body {
+      display: flex; height: 280px;
+    }
+    .json-line-gutter {
+      min-width: 44px; width: 44px;
+      overflow: hidden;
+      text-align: right;
+      padding: 10px 8px 10px 0;
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      user-select: none; flex-shrink: 0;
+      white-space: pre;
+    }
+    .json-textarea-wrap {
+      flex: 1; overflow: auto; position: relative;
+    }
+    .json-editor-textarea {
+      display: block; width: 100%; min-height: 100%;
+      padding: 10px 12px;
+      background: transparent;
+      color: var(--text-code);
+      font-family: var(--font-mono); font-size: 12px; line-height: 1.6;
+      border: none; outline: none; resize: none;
+      tab-size: 2; white-space: pre; word-wrap: normal; overflow: hidden;
+    }
+    .json-editor-textarea:focus { background: rgba(61,94,140,0.04); }
 
     /* ===== SETTINGS: NEW FORM ELEMENTS ===== */
 
@@ -1740,6 +1928,54 @@
     }
     .snap-status-msg.err { color: var(--badge-error-text); }
     .snap-status-msg.ok  { color: #3daa6a; }
+  
+    /* ===== OAUTH SETTINGS ===== */
+    .oauth-toggle-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .oauth-toggle-label { font-size:12px; color:var(--text-secondary); }
+    .toggle-switch {
+      position:relative; width:36px; height:20px; cursor:pointer;
+    }
+    .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+    .toggle-track {
+      position:absolute; inset:0;
+      background:var(--bg-hover); border:1px solid var(--border-muted);
+      border-radius:10px; transition:background .2s, border-color .2s;
+    }
+    .toggle-thumb {
+      position:absolute; top:3px; left:3px;
+      width:12px; height:12px; border-radius:50%;
+      background:var(--text-muted); transition:transform .2s, background .2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background:var(--accent-blue); border-color:var(--accent-blue); }
+    .toggle-switch input:checked ~ .toggle-thumb, 
+    .toggle-switch input:checked + .toggle-track + .toggle-thumb { background:#fff; transform:translateX(16px); }
+    .oauth-fields { overflow:hidden; transition:max-height .3s ease, opacity .3s ease; }
+    .oauth-fields.collapsed { max-height:0; opacity:0; pointer-events:none; }
+    .oauth-fields.expanded  { max-height:1200px; opacity:1; }
+    .oauth-mode-toggle { display:flex; gap:6px; margin-bottom:14px; }
+    .oauth-mode-btn {
+      padding:5px 14px; border-radius:var(--radius-md);
+      border:1px solid var(--border-muted); background:var(--bg-elevated);
+      color:var(--text-secondary); font-size:12px; cursor:pointer;
+      transition:background .15s, color .15s, border-color .15s;
+    }
+    .oauth-mode-btn.active {
+      background:var(--accent-blue); border-color:var(--accent-blue); color:#fff;
+    }
+    .oauth-mode-section { display:none; }
+    .oauth-mode-section.active { display:block; }
+    .oauth-test-row { display:flex; align-items:center; gap:10px; margin-top:16px; }
+    .btn-oauth-test {
+      padding:5px 14px; border-radius:var(--radius-md);
+      border:1px solid var(--border-muted); background:var(--bg-elevated);
+      color:var(--text-secondary); font-size:12px; cursor:pointer;
+      transition:background .15s;
+    }
+    .btn-oauth-test:hover { background:var(--bg-hover); }
+    .oauth-test-result { font-size:11px; }
+    .oauth-test-result.ok  { color:var(--green-live); }
+    .oauth-test-result.err { color:var(--badge-error-text); }
+
   </style>
 </head>
 <body>
@@ -1970,10 +2206,47 @@
 
   <!-- SETTINGS VIEW -->
   <div class="settings-panel" id="settingsView">
-    <div class="settings-scroll" id="settingsScroll">
 
-      <!-- Restart notice -->
-      <div class="settings-restart-warn" style="max-width:720px;margin-bottom:20px">
+    <!-- ── Left navigation sidebar ── -->
+    <div class="settings-nav" id="settingsNav">
+      <button class="settings-nav-item active" data-tab="connection">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M2 4.5h10M2 9.5h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+          <circle cx="5" cy="4.5" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+          <circle cx="9" cy="9.5" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+        </svg>
+        Connection
+      </button>
+      <button class="settings-nav-item" data-tab="ai">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1.5C4.5 1.5 2.5 3.5 2.5 6s2 4.5 4.5 4.5S11.5 8.5 11.5 6 9.5 1.5 7 1.5Z" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M5 5.5c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+          <circle cx="7" cy="9.5" r=".7" fill="currentColor"/>
+        </svg>
+        AI Analysis
+      </button>
+      <button class="settings-nav-item" data-tab="display">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1" y="2" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M4.5 12.5h5M7 10v2.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+        </svg>
+        Display
+      </button>
+      <button class="settings-nav-item" data-tab="security">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="2.5" y="6" width="9" height="6.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+          <path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+          <circle cx="7" cy="9" r="1" fill="currentColor"/>
+        </svg>
+        Security
+      </button>
+    </div>
+
+    <!-- ── Content area ── -->
+    <div class="settings-content-area">
+
+      <!-- Restart notice (always visible) -->
+      <div class="settings-restart-warn" style="margin:16px 24px 0;max-width:660px">
         <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
           <path d="M6.5 1.5 L11.5 10.5 H1.5 Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
           <path d="M6.5 5.5 v2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
@@ -1982,187 +2255,325 @@
         Changes are written to <code style="font-family:var(--font-mono);font-size:11px">config.json</code> and require a feedbackloop restart to take effect.
       </div>
 
-      <!-- ── SECTION: Transport ── -->
-      <div class="settings-section">
-        <div class="settings-section-hdr">
-          <div class="settings-section-ico">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-              <path d="M2 5h11M2 10h11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
-              <circle cx="5.5" cy="5" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
-              <circle cx="9.5" cy="10" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
-            </svg>
-          </div>
-          <div>
-            <div class="settings-section-title">Transport</div>
-            <div class="settings-section-desc">How MCP clients connect to this proxy.</div>
-          </div>
-        </div>
+      <!-- Scrollable pane area -->
+      <div class="settings-scroll" id="settingsScroll">
 
-        <div class="settings-field">
-          <label class="settings-label">Client-facing transport mode</label>
-          <div class="transport-toggle" id="transportToggle">
-            <button class="transport-btn active" id="transportStdioBtn" data-value="stdio">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <rect x="1" y="2.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M3 5.5 l1.5 1-1.5 1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M6.5 7.5h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
-              </svg>
-              stdio
-            </button>
-            <button class="transport-btn" id="transportHttpBtn" data-value="http">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.1"/>
-                <path d="M1.5 6h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-                <path d="M6 1.5c-1.4 1.4-2 2.7-2 4.5s.6 3.1 2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-                <path d="M6 1.5c1.4 1.4 2 2.7 2 4.5s-.6 3.1-2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-              </svg>
-              http
-            </button>
-          </div>
-          <div class="settings-input-hint" id="transportHint">
-            Listen on stdin/stdout — use this when configured as a Claude Desktop MCP server.
-          </div>
-        </div>
+        <!-- ── TAB: Connection ── -->
+        <div class="settings-tab-pane active" id="settingsTabConnection">
 
-        <!-- HTTP-only fields (animated reveal) -->
-        <div class="http-fields" id="httpFields">
-          <div class="settings-field-row">
+          <!-- Transport section -->
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M2 5h11M2 10h11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>
+                  <circle cx="5.5" cy="5" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+                  <circle cx="9.5" cy="10" r="1.5" fill="var(--bg-surface)" stroke="currentColor" stroke-width="1.1"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">Transport</div>
+                <div class="settings-section-desc">How MCP clients connect to this proxy.</div>
+              </div>
+            </div>
+
             <div class="settings-field">
-              <label class="settings-label" for="httpHostInput">Bind host</label>
-              <input class="settings-input" id="httpHostInput" type="text" placeholder="localhost" autocomplete="off" spellcheck="false" />
+              <label class="settings-label">Client-facing transport mode</label>
+              <div class="transport-toggle" id="transportToggle">
+                <button class="transport-btn active" id="transportStdioBtn" data-value="stdio">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <rect x="1" y="2.5" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M3 5.5 l1.5 1-1.5 1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6.5 7.5h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+                  </svg>
+                  stdio
+                </button>
+                <button class="transport-btn" id="transportHttpBtn" data-value="http">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.1"/>
+                    <path d="M1.5 6h9" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    <path d="M6 1.5c-1.4 1.4-2 2.7-2 4.5s.6 3.1 2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                    <path d="M6 1.5c1.4 1.4 2 2.7 2 4.5s-.6 3.1-2 4.5" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                  </svg>
+                  http
+                </button>
+              </div>
+              <div class="settings-input-hint" id="transportHint">
+                Listen on stdin/stdout — use this when configured as a Claude Desktop MCP server.
+              </div>
             </div>
-            <div class="settings-field narrow">
-              <label class="settings-label" for="httpPortInput">Port</label>
-              <input class="settings-input" id="httpPortInput" type="number" placeholder="3000" min="1" max="65535" />
+
+            <!-- HTTP-only fields (animated reveal) -->
+            <div class="http-fields" id="httpFields">
+              <div class="settings-field-row">
+                <div class="settings-field">
+                  <label class="settings-label" for="httpHostInput">Bind host</label>
+                  <input class="settings-input" id="httpHostInput" type="text" placeholder="localhost" autocomplete="off" spellcheck="false" />
+                </div>
+                <div class="settings-field narrow">
+                  <label class="settings-label" for="httpPortInput">Port</label>
+                  <input class="settings-input" id="httpPortInput" type="number" placeholder="3000" min="1" max="65535" />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- ── SECTION: Upstream MCP Server ── -->
-      <div class="settings-section">
-        <div class="settings-section-hdr">
-          <div class="settings-section-ico">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-              <rect x="2" y="3" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M2 6h11" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M5 9h5M5 11h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
-            </svg>
+          <!-- Upstream MCP Server section -->
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="2" y="3" width="11" height="9" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M2 6h11" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M5 9h5M5 11h3" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">Upstream MCP Servers</div>
+                <div class="settings-section-desc">All configured servers are proxied simultaneously. Tools from each server are aggregated and exposed as <code style="font-family:var(--font-mono);font-size:10px">serverName__toolName</code>.</div>
+              </div>
+            </div>
+
+            <!-- Hidden source-of-truth textarea (read/written by save/load JS) -->
+            <textarea id="configTextarea" hidden spellcheck="false" autocomplete="off"></textarea>
+            <!-- Hidden active server input (read by saveSettings) -->
+            <input type="hidden" id="serverNameInput" />
+            <datalist id="serverNameList"></datalist>
+
+            <!-- Visual MCP server editor -->
+            <div class="mcp-editor" id="mcpEditor">
+              <div class="mcp-editor-hdr">
+                <span class="mcp-editor-count" id="mcpServerCount"></span>
+                <button class="mcp-add-btn" id="mcpAddBtn">
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M5 1v8M1 5h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                  Add Server
+                </button>
+              </div>
+              <div class="mcp-list" id="mcpList">
+                <div class="mcp-empty">No upstream servers configured. Click "Add Server" to get started.</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <div class="settings-section-title">Upstream MCP Server</div>
-            <div class="settings-section-desc">Which server to proxy and how it is launched.</div>
+
+        </div><!-- #settingsTabConnection -->
+
+        <!-- ── TAB: AI Analysis ── -->
+        <div class="settings-tab-pane" id="settingsTabAi">
+
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M7.5 2.5 C4.7 2.5 2.5 4.7 2.5 7.5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5Z" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M5.5 6.5c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+                  <circle cx="7.5" cy="10.5" r=".7" fill="currentColor"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">AI Analysis</div>
+                <div class="settings-section-desc">Claude model and credentials for the AI analysis feature.</div>
+              </div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="modelSelect">Model</label>
+              <select class="settings-select" id="modelSelect">
+                <option value="">Loading models…</option>
+              </select>
+              <div class="settings-input-hint" id="modelHint"></div>
+              <div class="settings-apikey-notice" id="modelApiKeyNotice" style="display:none">
+                Provide an Anthropic API key below to load available models.
+              </div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="apiKeyInput">Anthropic API key</label>
+              <input class="settings-input" id="apiKeyInput" type="password"
+                     placeholder="sk-ant-…" autocomplete="new-password"
+                     style="max-width:420px;letter-spacing:0.05em" />
+              <div class="settings-input-hint" id="apiKeyHint">
+                Leave blank to keep the existing key.
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div class="settings-field">
-          <label class="settings-label" for="serverNameInput">Active server</label>
-          <input class="settings-input" id="serverNameInput" type="text" list="serverNameList"
-                 placeholder="(first entry)" autocomplete="off" spellcheck="false" />
-          <datalist id="serverNameList"></datalist>
-          <div class="settings-input-hint">
-            Name of the <code>mcpServers</code> entry to proxy. Leave blank to use the first entry.
+        </div><!-- #settingsTabAi -->
+
+        <!-- ── TAB: Display ── -->
+        <div class="settings-tab-pane" id="settingsTabDisplay">
+
+          <!-- UI Server -->
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="1.5" y="2.5" width="12" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M5 13h5M7.5 11v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+                  <circle cx="7.5" cy="6.5" r="1.8" stroke="currentColor" stroke-width="1.05"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">UI Server</div>
+                <div class="settings-section-desc">Port for this web interface.</div>
+              </div>
+            </div>
+
+            <div class="settings-field">
+              <label class="settings-label" for="uiPortInput">UI port</label>
+              <input class="settings-input" id="uiPortInput" type="number" placeholder="0"
+                     min="0" max="65535" style="max-width:140px" />
+              <div class="settings-input-hint">0 = auto-select from range 3070–3099</div>
+            </div>
           </div>
-        </div>
 
-        <hr class="settings-divider" />
+          <!-- Snapshots -->
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="1.5" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M4.5 3 v-1 a3 3 0 0 1 6 0 v1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
+                  <circle cx="7.5" cy="8" r="2.2" stroke="currentColor" stroke-width="1.05"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">Snapshots</div>
+                <div class="settings-section-desc">Configure snapshot capture behaviour.</div>
+              </div>
+            </div>
 
-        <div class="settings-field">
-          <label class="settings-label" for="configTextarea">mcpServers (JSON)</label>
-          <textarea class="settings-textarea" id="configTextarea" rows="10"
-                    spellcheck="false" autocomplete="off"></textarea>
-          <div class="settings-input-hint" id="mcpServersHint"></div>
-        </div>
-      </div>
-
-      <!-- ── SECTION: UI Server ── -->
-      <div class="settings-section">
-        <div class="settings-section-hdr">
-          <div class="settings-section-ico">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-              <rect x="1.5" y="2.5" width="12" height="8.5" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M5 13h5M7.5 11v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
-              <circle cx="7.5" cy="6.5" r="1.8" stroke="currentColor" stroke-width="1.05"/>
-            </svg>
+            <div class="settings-field">
+              <label class="settings-label" for="maxSnapLogLinesInput">Max log lines per snapshot</label>
+              <input class="settings-input" id="maxSnapLogLinesInput" type="number" placeholder="500"
+                     min="1" max="2000" style="max-width:140px" />
+              <div class="settings-input-hint">How many of the most-recent log entries to include when saving a snapshot. Default: 500. Maximum: 2000.</div>
+            </div>
           </div>
-          <div>
-            <div class="settings-section-title">UI Server</div>
-            <div class="settings-section-desc">Port for this web interface.</div>
-          </div>
-        </div>
 
-        <div class="settings-field">
-          <label class="settings-label" for="uiPortInput">UI port</label>
-          <input class="settings-input" id="uiPortInput" type="number" placeholder="0"
-                 min="0" max="65535" style="max-width:140px" />
-          <div class="settings-input-hint">0 = auto-select from range 3070–3099</div>
-        </div>
-      </div>
+        </div><!-- #settingsTabDisplay -->
 
-      <!-- ── SECTION: AI Analysis ── -->
-      <div class="settings-section">
-        <div class="settings-section-hdr">
-          <div class="settings-section-ico">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-              <path d="M7.5 2.5 C4.7 2.5 2.5 4.7 2.5 7.5s2.2 5 5 5 5-2.2 5-5-2.2-5-5-5Z" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M5.5 6.5c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
-              <circle cx="7.5" cy="10.5" r=".7" fill="currentColor"/>
-            </svg>
-          </div>
-          <div>
-            <div class="settings-section-title">AI Analysis</div>
-            <div class="settings-section-desc">Claude model and credentials for the AI analysis feature.</div>
-          </div>
-        </div>
+        <!-- ── TAB: Security ── -->
+        <div class="settings-tab-pane" id="settingsTabSecurity">
 
-        <div class="settings-field">
-          <label class="settings-label" for="modelSelect">Model</label>
-          <select class="settings-select" id="modelSelect">
-            <option value="">Loading models…</option>
-          </select>
-          <div class="settings-input-hint" id="modelHint"></div>
-          <div class="settings-apikey-notice" id="modelApiKeyNotice" style="display:none">
-            Provide an Anthropic API key below to load available models.
-          </div>
-        </div>
+          <!-- Inbound Auth (OAuth 2.0) -->
+          <div class="settings-section">
+            <div class="settings-section-hdr">
+              <div class="settings-section-ico">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <rect x="3" y="6.5" width="9" height="7" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
+                  <path d="M5 6.5V4.5a2.5 2.5 0 0 1 5 0v2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="7.5" cy="10" r="1" fill="currentColor"/>
+                </svg>
+              </div>
+              <div>
+                <div class="settings-section-title">Inbound Auth (OAuth 2.0)</div>
+                <div class="settings-section-desc">Protect the HTTP transport with Bearer-token authentication. Only applies when transport is HTTP.</div>
+              </div>
+            </div>
 
-        <div class="settings-field">
-          <label class="settings-label" for="apiKeyInput">Anthropic API key</label>
-          <input class="settings-input" id="apiKeyInput" type="password"
-                 placeholder="sk-ant-…" autocomplete="new-password"
-                 style="max-width:420px;letter-spacing:0.05em" />
-          <div class="settings-input-hint" id="apiKeyHint">
-            Leave blank to keep the existing key.
-          </div>
-        </div>
-      </div>
+            <!-- Enable / disable toggle -->
+            <div class="oauth-toggle-row">
+              <label class="toggle-switch" id="oauthEnableToggle">
+                <input type="checkbox" id="oauthEnabledInput" />
+                <span class="toggle-track"></span>
+                <span class="toggle-thumb"></span>
+              </label>
+              <span class="oauth-toggle-label" id="oauthToggleLabel">OAuth disabled — all connections accepted</span>
+            </div>
 
-      <!-- ── SECTION: Snapshots ── -->
-      <div class="settings-section">
-        <div class="settings-section-hdr">
-          <div class="settings-section-ico">
-            <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-              <rect x="1.5" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.1"/>
-              <path d="M4.5 3 v-1 a3 3 0 0 1 6 0 v1" stroke="currentColor" stroke-width="1.05" stroke-linecap="round"/>
-              <circle cx="7.5" cy="8" r="2.2" stroke="currentColor" stroke-width="1.05"/>
-            </svg>
-          </div>
-          <div>
-            <div class="settings-section-title">Snapshots</div>
-            <div class="settings-section-desc">Configure snapshot capture behaviour.</div>
-          </div>
-        </div>
+            <!-- Collapsible OAuth fields -->
+            <div class="oauth-fields collapsed" id="oauthFields">
 
-        <div class="settings-field">
-          <label class="settings-label" for="maxSnapLogLinesInput">Max log lines per snapshot</label>
-          <input class="settings-input" id="maxSnapLogLinesInput" type="number" placeholder="500"
-                 min="1" max="2000" style="max-width:140px" />
-          <div class="settings-input-hint">How many of the most-recent log entries to include when saving a snapshot. Default: 500. Maximum: 2000.</div>
-        </div>
-      </div>
+              <!-- Mode selector -->
+              <div class="settings-field">
+                <label class="settings-label">Validation mode</label>
+                <div class="oauth-mode-toggle">
+                  <button class="oauth-mode-btn active" id="oauthModeJwt" data-mode="jwt">JWT / JWKS</button>
+                  <button class="oauth-mode-btn" id="oauthModeIntrospect" data-mode="introspect">Token Introspection</button>
+                </div>
+                <div class="settings-input-hint" id="oauthModeHint">
+                  Validate tokens locally using the issuer&apos;s JWKS endpoint — fast, no per-request network call.
+                </div>
+              </div>
 
-      <!-- Save row -->
-      <div style="max-width:720px">
+              <!-- JWT fields -->
+              <div class="oauth-mode-section active" id="oauthJwtSection">
+                <div class="settings-field">
+                  <label class="settings-label" for="oauthIssuerInput">Issuer URL</label>
+                  <input class="settings-input" id="oauthIssuerInput" type="text"
+                         placeholder="https://your-auth-server.example.com"
+                         autocomplete="off" spellcheck="false" style="max-width:500px" />
+                  <div class="settings-input-hint">
+                    The <code>iss</code> claim expected in tokens. Also used to derive the JWKS URI
+                    (<code>&lt;issuer&gt;/.well-known/jwks.json</code>) unless overridden below.
+                  </div>
+                </div>
+
+                <div class="settings-field">
+                  <label class="settings-label" for="oauthJwksUriInput">JWKS URI <span style="color:var(--text-muted);font-weight:400">(optional override)</span></label>
+                  <input class="settings-input" id="oauthJwksUriInput" type="text"
+                         placeholder="https://your-auth-server.example.com/.well-known/jwks.json"
+                         autocomplete="off" spellcheck="false" style="max-width:500px" />
+                  <div class="settings-input-hint">Leave blank to auto-derive from the issuer URL.</div>
+                </div>
+              </div>
+
+              <!-- Introspection fields -->
+              <div class="oauth-mode-section" id="oauthIntrospectSection">
+                <div class="settings-field">
+                  <label class="settings-label" for="oauthIntrospectEndpointInput">Introspection endpoint URL</label>
+                  <input class="settings-input" id="oauthIntrospectEndpointInput" type="text"
+                         placeholder="https://your-auth-server.example.com/oauth/introspect"
+                         autocomplete="off" spellcheck="false" style="max-width:500px" />
+                  <div class="settings-input-hint">RFC 7662 token introspection endpoint. Called for every inbound request.</div>
+                </div>
+
+                <div class="settings-field">
+                  <label class="settings-label" for="oauthClientIdInput">Client ID</label>
+                  <input class="settings-input" id="oauthClientIdInput" type="text"
+                         placeholder="feedbackloop" autocomplete="off" spellcheck="false"
+                         style="max-width:320px" />
+                  <div class="settings-input-hint">Used for HTTP Basic auth on the introspection endpoint.</div>
+                </div>
+
+                <div class="settings-field">
+                  <label class="settings-label" for="oauthClientSecretInput">Client secret</label>
+                  <input class="settings-input" id="oauthClientSecretInput" type="password"
+                         placeholder="(leave blank to keep existing)"
+                         autocomplete="new-password" style="max-width:320px" />
+                </div>
+              </div>
+
+              <!-- Common fields -->
+              <hr class="settings-divider" />
+
+              <div class="settings-field">
+                <label class="settings-label" for="oauthAudienceInput">Audience <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <input class="settings-input" id="oauthAudienceInput" type="text"
+                       placeholder="feedbackloop" autocomplete="off" spellcheck="false"
+                       style="max-width:320px" />
+                <div class="settings-input-hint">Expected <code>aud</code> claim. Leave blank to skip audience validation.</div>
+              </div>
+
+              <div class="settings-field">
+                <label class="settings-label" for="oauthScopesInput">Required scopes <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <input class="settings-input" id="oauthScopesInput" type="text"
+                       placeholder="mcp:access" autocomplete="off" spellcheck="false"
+                       style="max-width:320px" />
+                <div class="settings-input-hint">Space-separated list of scopes that must be present in the token&apos;s <code>scope</code> claim.</div>
+              </div>
+
+            </div><!-- #oauthFields -->
+          </div>
+
+        </div><!-- #settingsTabSecurity -->
+
+      </div><!-- #settingsScroll -->
+
+      <!-- Save bar -->
+      <div class="settings-save-bar">
         <div class="settings-actions">
           <button class="btn-settings-save" id="saveSettingsBtn">
             <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
@@ -2174,7 +2585,7 @@
         </div>
       </div>
 
-    </div>
+    </div><!-- .settings-content-area -->
   </div><!-- #settingsView -->
 
   <!-- SAVE SNAPSHOT MODAL -->
@@ -3823,6 +4234,49 @@
   var settingsCurrentModel = '';
   var settingsLoaded = false;
   var settingsTransport = 'stdio';
+  var oauthMode = 'jwt';  // "jwt" or "introspect"
+
+  function setOAuthMode(mode) {
+    oauthMode = mode;
+    document.getElementById('oauthModeJwt').classList.toggle('active', mode === 'jwt');
+    document.getElementById('oauthModeIntrospect').classList.toggle('active', mode === 'introspect');
+    document.getElementById('oauthJwtSection').classList.toggle('active', mode === 'jwt');
+    document.getElementById('oauthIntrospectSection').classList.toggle('active', mode === 'introspect');
+    var hint = document.getElementById('oauthModeHint');
+    if (mode === 'jwt') {
+      hint.textContent = 'Validate tokens locally using the issuer\'s JWKS endpoint — fast, no per-request network call.';
+    } else {
+      hint.textContent = 'Call the introspection endpoint for every request — works with opaque tokens.';
+    }
+  }
+
+  function setOAuthEnabled(enabled) {
+    document.getElementById('oauthEnabledInput').checked = enabled;
+    var fields = document.getElementById('oauthFields');
+    var label  = document.getElementById('oauthToggleLabel');
+    if (enabled) {
+      fields.classList.remove('collapsed');
+      fields.classList.add('expanded');
+      label.textContent = 'OAuth enabled — Bearer token required';
+    } else {
+      fields.classList.remove('expanded');
+      fields.classList.add('collapsed');
+      label.textContent = 'OAuth disabled — all connections accepted';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // OAuth toggle
+    document.getElementById('oauthEnabledInput').addEventListener('change', function () {
+      setOAuthEnabled(this.checked);
+    });
+    // Mode buttons
+    ['oauthModeJwt', 'oauthModeIntrospect'].forEach(function (id) {
+      document.getElementById(id).addEventListener('click', function () {
+        setOAuthMode(this.dataset.mode);
+      });
+    });
+  });
 
   // Transport toggle
   function setTransport(val) {
@@ -3861,9 +4315,263 @@
     } catch (_) {}
   }
 
-  document.getElementById('configTextarea').addEventListener('input', function () {
-    updateServerNameList(this.value);
-  });
+  /* ===== SETTINGS NAV TABS ===== */
+  (function () {
+    var navItems = document.querySelectorAll('.settings-nav-item');
+    navItems.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var tab = this.getAttribute('data-tab');
+        navItems.forEach(function (b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        document.querySelectorAll('.settings-tab-pane').forEach(function (p) {
+          p.classList.remove('active');
+        });
+        var pane = document.getElementById('settingsTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+        if (pane) pane.classList.add('active');
+      });
+    });
+  })();
+
+  /* ===== MCP SERVER EDITOR ===== */
+  (function () {
+    var state       = {};
+    var editingKey  = null;
+    var isAdding    = false;
+    var list        = document.getElementById('mcpList');
+    var countEl     = document.getElementById('mcpServerCount');
+    var addBtn      = document.getElementById('mcpAddBtn');
+    var textarea    = document.getElementById('configTextarea');
+
+    function cmdPreview(cfg) {
+      var parts = [cfg.command || ''];
+      if (Array.isArray(cfg.args)) parts = parts.concat(cfg.args);
+      return parts.join(' ');
+    }
+
+    function sync() {
+      textarea.value = JSON.stringify(state, null, 2);
+      updateServerNameList(textarea.value);
+    }
+
+    function updateCount() {
+      var n = Object.keys(state).length;
+      countEl.textContent = n === 1 ? '1 server' : n + ' servers';
+    }
+
+    /* ── view card ─────────────────────────────────────────── */
+    function makeViewCard(name, cfg) {
+      var card = document.createElement('div');
+      card.className = 'mcp-card';
+      card.setAttribute('data-key', name);
+
+      var row = document.createElement('div');
+      row.className = 'mcp-card-view';
+
+      var info = document.createElement('div');
+      info.className = 'mcp-card-info';
+
+      var nr = document.createElement('div');
+      nr.className = 'mcp-card-name-row';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'mcp-card-name';
+      nameSpan.textContent = name;
+      nr.appendChild(nameSpan);
+
+      var preview = document.createElement('div');
+      preview.className = 'mcp-card-preview';
+      preview.textContent = cmdPreview(cfg);
+
+      info.appendChild(nr); info.appendChild(preview);
+
+      var btns = document.createElement('div');
+      btns.className = 'mcp-card-btns';
+
+      var editBtn = document.createElement('button');
+      editBtn.className = 'mcp-btn';
+      editBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 8.5l1.2-.4 5.1-5.1-1-1-5 5-.3 1.5zm6.1-6.5.9 1" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg> Edit';
+      editBtn.addEventListener('click', function () { editingKey = name; isAdding = false; render(); });
+      btns.appendChild(editBtn);
+
+      var delBtn = document.createElement('button');
+      delBtn.className = 'mcp-btn icon-only danger';
+      delBtn.innerHTML = '&times;';
+      delBtn.title = 'Remove server';
+      delBtn.addEventListener('click', function () {
+        if (!confirm('Remove server "' + name + '"?')) return;
+        delete state[name];
+        sync(); render();
+      });
+      btns.appendChild(delBtn);
+
+      row.appendChild(info); row.appendChild(btns);
+      card.appendChild(row);
+      return card;
+    }
+
+    /* ── edit form ─────────────────────────────────────────── */
+    function makeEditForm(origName, cfg, isNew) {
+      cfg = cfg || { command: '', args: [], env: {} };
+      var args = Array.isArray(cfg.args) ? cfg.args.slice() : [];
+      var env  = (cfg.env && typeof cfg.env === 'object') ? cfg.env : {};
+
+      var wrap = document.createElement('div');
+      wrap.className = 'mcp-card-edit';
+
+      /* name + command */
+      var grid = document.createElement('div');
+      grid.className = 'mcp-form-2col';
+
+      function field(labelText) {
+        var f = document.createElement('div'); f.className = 'mcp-form-field';
+        var l = document.createElement('div'); l.className = 'mcp-form-label'; l.textContent = labelText;
+        var i = document.createElement('input'); i.className = 'mcp-form-input'; i.type = 'text';
+        f.appendChild(l); f.appendChild(i);
+        grid.appendChild(f);
+        return i;
+      }
+
+      var nameInput = field('Server name');
+      nameInput.placeholder = 'e.g. chrome-devtools';
+      nameInput.value = isNew ? '' : origName;
+
+      var cmdInput = field('Command');
+      cmdInput.placeholder = 'e.g. npx';
+      cmdInput.value = cfg.command || '';
+
+      wrap.appendChild(grid);
+
+      /* dynamic list helper */
+      function makeSection(labelText) {
+        var sec = document.createElement('div'); sec.className = 'mcp-form-section';
+        var lbl = document.createElement('div'); lbl.className = 'mcp-form-section-label'; lbl.textContent = labelText;
+        var lst = document.createElement('div'); lst.className = 'mcp-dynamic-list';
+        var addBtn2 = document.createElement('button'); addBtn2.type = 'button'; addBtn2.className = 'mcp-add-item-btn';
+        sec.appendChild(lbl); sec.appendChild(lst); sec.appendChild(addBtn2);
+        wrap.appendChild(sec);
+        return { lst: lst, addBtn2: addBtn2 };
+      }
+
+      /* arguments */
+      var argSec = makeSection('Arguments');
+      argSec.addBtn2.innerHTML = '+ Add Argument';
+      function addArgRow(val) {
+        var r = document.createElement('div'); r.className = 'mcp-dynamic-row';
+        var i = document.createElement('input'); i.className = 'mcp-form-input'; i.type = 'text'; i.value = val || ''; i.placeholder = 'argument';
+        var d = document.createElement('button'); d.type = 'button'; d.className = 'mcp-remove-item-btn'; d.innerHTML = '&times;';
+        d.addEventListener('click', function () { argSec.lst.removeChild(r); });
+        r.appendChild(i); r.appendChild(d); argSec.lst.appendChild(r);
+        return i;
+      }
+      args.forEach(addArgRow);
+      argSec.addBtn2.addEventListener('click', function () { addArgRow('').focus(); });
+
+      /* env vars */
+      var envSec = makeSection('Environment variables');
+      envSec.addBtn2.innerHTML = '+ Add Variable';
+      function addEnvRow(k, v) {
+        var r = document.createElement('div'); r.className = 'mcp-dynamic-row';
+        var ki = document.createElement('input'); ki.className = 'mcp-form-input mcp-env-key'; ki.type = 'text'; ki.placeholder = 'KEY'; ki.value = k || '';
+        var sep = document.createElement('span'); sep.className = 'mcp-env-sep'; sep.textContent = '=';
+        var vi = document.createElement('input'); vi.className = 'mcp-form-input'; vi.type = 'text'; vi.placeholder = 'value'; vi.value = v || '';
+        var d = document.createElement('button'); d.type = 'button'; d.className = 'mcp-remove-item-btn'; d.innerHTML = '&times;';
+        d.addEventListener('click', function () { envSec.lst.removeChild(r); });
+        r.appendChild(ki); r.appendChild(sep); r.appendChild(vi); r.appendChild(d); envSec.lst.appendChild(r);
+      }
+      Object.keys(env).forEach(function (k) { addEnvRow(k, env[k]); });
+      envSec.addBtn2.addEventListener('click', function () { addEnvRow('', ''); });
+
+      /* footer */
+      var footer = document.createElement('div');
+      footer.className = 'mcp-card-form-footer';
+      var errMsg = document.createElement('span');
+      errMsg.style.cssText = 'flex:1;font-size:11px;color:var(--badge-error-text)';
+
+      var cancelBtn = document.createElement('button'); cancelBtn.type = 'button'; cancelBtn.className = 'mcp-btn'; cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', function () { editingKey = null; isAdding = false; render(); });
+
+      var saveBtn = document.createElement('button'); saveBtn.type = 'button'; saveBtn.className = 'mcp-btn';
+      saveBtn.style.cssText = 'background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)';
+      saveBtn.textContent = 'Save';
+      saveBtn.addEventListener('click', function () {
+        var newName = nameInput.value.trim();
+        var cmd     = cmdInput.value.trim();
+        if (!newName) { errMsg.textContent = 'Server name is required.'; return; }
+        if (!cmd)     { errMsg.textContent = 'Command is required.'; return; }
+        if (newName !== origName && state[newName]) { errMsg.textContent = '"' + newName + '" already exists.'; return; }
+
+        var newArgs = [];
+        argSec.lst.querySelectorAll('input').forEach(function (i) { if (i.value.trim()) newArgs.push(i.value); });
+
+        var newEnv = {};
+        envSec.lst.querySelectorAll('.mcp-dynamic-row').forEach(function (r) {
+          var ins = r.querySelectorAll('input');
+          var k = ins[0] ? ins[0].value.trim() : '';
+          var v = ins[1] ? ins[1].value : '';
+          if (k) newEnv[k] = v;
+        });
+
+        var entry = { command: cmd };
+        if (newArgs.length) entry.args = newArgs;
+        if (Object.keys(newEnv).length) entry.env = newEnv;
+
+        if (!isNew && origName !== newName) {
+          var rebuilt = {};
+          Object.keys(state).forEach(function (k) { rebuilt[k === origName ? newName : k] = k === origName ? entry : state[k]; });
+          state = rebuilt;
+          if (getActive() === origName) activeInput.value = newName;
+        } else {
+          state[newName] = entry;
+        }
+        editingKey = null; isAdding = false;
+        sync(); render();
+      });
+
+      footer.appendChild(errMsg); footer.appendChild(cancelBtn); footer.appendChild(saveBtn);
+      wrap.appendChild(footer);
+      return { wrap: wrap, nameInput: nameInput };
+    }
+
+    /* ── render ────────────────────────────────────────────── */
+    function render() {
+      while (list.firstChild) list.removeChild(list.firstChild);
+      updateCount();
+
+      if (isAdding) {
+        var newCard = document.createElement('div'); newCard.className = 'mcp-card';
+        var f = makeEditForm('', null, true); newCard.appendChild(f.wrap); list.appendChild(newCard);
+        setTimeout(function () { f.nameInput.focus(); }, 0);
+      }
+
+      var keys = Object.keys(state);
+      if (keys.length === 0 && !isAdding) {
+        var empty = document.createElement('div'); empty.className = 'mcp-empty';
+        empty.textContent = 'No upstream servers configured. Click "Add Server" to get started.';
+        list.appendChild(empty);
+        return;
+      }
+
+      keys.forEach(function (name) {
+        if (editingKey === name) {
+          var ec = document.createElement('div'); ec.className = 'mcp-card'; ec.setAttribute('data-key', name);
+          var ef = makeEditForm(name, state[name], false); ec.appendChild(ef.wrap); list.appendChild(ec);
+          setTimeout(function () { ef.nameInput.focus(); }, 0);
+        } else {
+          list.appendChild(makeViewCard(name, state[name]));
+        }
+      });
+    }
+
+    /* ── public hook called from loadSettings ──────────────── */
+    window._mcpEditorLoad = function (serversObj) {
+      state = (serversObj && typeof serversObj === 'object') ? JSON.parse(JSON.stringify(serversObj)) : {};
+      editingKey = null; isAdding = false;
+      sync(); render();
+    };
+
+    addBtn.addEventListener('click', function () { isAdding = true; editingKey = null; render(); });
+    render();
+  })();
 
   function loadSettings() {
     var modelSelect         = document.getElementById('modelSelect');
@@ -3892,21 +4600,15 @@
         // UI port
         uiPortInput.value = typeof data.uiPort === 'number' ? data.uiPort : 0;
 
-        // Active server
-        serverNameInput.value = data.server || '';
-
         // Snapshot log lines
         if (maxSnapLogLinesInput) {
           maxSnapLogLinesInput.value = typeof data.max_snapshot_log_lines === 'number' && data.max_snapshot_log_lines > 0
             ? data.max_snapshot_log_lines : 500;
         }
 
-        // mcpServers JSON
-        try {
-          configTextarea.value = JSON.stringify(data.mcpServers || {}, null, 2);
-          updateServerNameList(configTextarea.value);
-        } catch (_) {
-          configTextarea.value = '{}';
+        // Load MCP servers into visual editor (also syncs hidden textarea)
+        if (window._mcpEditorLoad) {
+          window._mcpEditorLoad(data.mcpServers || {});
         }
 
         // Model hint
@@ -3925,9 +4627,26 @@
         }
 
         settingsLoaded = true;
+
+        // OAuth
+        var oauth = data.oauth || {};
+        setOAuthEnabled(!!oauth.enabled);
+        setOAuthMode(oauth.mode || 'jwt');
+        var issuerEl = document.getElementById('oauthIssuerInput');
+        var jwksEl   = document.getElementById('oauthJwksUriInput');
+        var introspEl = document.getElementById('oauthIntrospectEndpointInput');
+        var clientIdEl = document.getElementById('oauthClientIdInput');
+        var audEl    = document.getElementById('oauthAudienceInput');
+        var scopesEl = document.getElementById('oauthScopesInput');
+        if (issuerEl)   issuerEl.value   = oauth.issuer || '';
+        if (jwksEl)     jwksEl.value     = oauth.jwksUri || '';
+        if (introspEl)  introspEl.value  = oauth.introspectEndpoint || '';
+        if (clientIdEl) clientIdEl.value = oauth.clientId || '';
+        if (audEl)      audEl.value      = oauth.audience || '';
+        if (scopesEl)   scopesEl.value   = Array.isArray(oauth.requiredScopes) ? oauth.requiredScopes.join(' ') : '';
       })
       .catch(function (err) {
-        document.getElementById('configTextarea').value = '// Could not load settings: ' + err.message;
+        if (window._mcpEditorLoad) window._mcpEditorLoad({}, '');
       });
   }
 
@@ -4001,6 +4720,22 @@
     if (snapLines > 2000) snapLines = 2000;
     if (snapLines < 1)    snapLines = 1;
 
+    // Collect OAuth fields
+    var oauthEnabledEl    = document.getElementById('oauthEnabledInput');
+    var oauthScopesRaw    = (document.getElementById('oauthScopesInput') || {}).value || '';
+    var oauthRequiredScopes = oauthScopesRaw.trim() ? oauthScopesRaw.trim().split(/\s+/) : [];
+    var oauthPayload = {
+      enabled:            oauthEnabledEl ? oauthEnabledEl.checked : false,
+      mode:               oauthMode,
+      issuer:             ((document.getElementById('oauthIssuerInput') || {}).value || '').trim(),
+      jwksUri:            ((document.getElementById('oauthJwksUriInput') || {}).value || '').trim(),
+      audience:           ((document.getElementById('oauthAudienceInput') || {}).value || '').trim(),
+      requiredScopes:     oauthRequiredScopes,
+      introspectEndpoint: ((document.getElementById('oauthIntrospectEndpointInput') || {}).value || '').trim(),
+      clientId:           ((document.getElementById('oauthClientIdInput') || {}).value || '').trim(),
+      clientSecret:       ((document.getElementById('oauthClientSecretInput') || {}).value || '')
+    };
+
     var payload = {
       mcpServers:          mcpServers,
       model:               modelSelect.value,
@@ -4010,7 +4745,8 @@
       uiPort:              parseInt(uiPortInput.value, 10) || 0,
       server:              serverNameInput.value.trim(),
       apiKey:              apiKeyInput.value,
-      maxSnapshotLogLines: snapLines
+      maxSnapshotLogLines: snapLines,
+      oauth:               oauthPayload
     };
 
     saveBtn.disabled = true;
@@ -4032,8 +4768,10 @@
         var modelHint = document.getElementById('modelHint');
         modelHint.textContent = 'Current: ' + (modelSelect.value || 'claude-sonnet-4-6 (default)');
 
-        // Clear API key field after save and update hint
+        // Clear secrets after save
         apiKeyInput.value = '';
+        var oauthSecretEl = document.getElementById('oauthClientSecretInput');
+        if (oauthSecretEl) oauthSecretEl.value = '';
         var apiKeyHint = document.getElementById('apiKeyHint');
         if (payload.apiKey) {
           apiKeyHint.textContent = 'API key saved. Leave blank to keep existing key.';

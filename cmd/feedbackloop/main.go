@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/dsandor/feedbackloop/internal/analysis"
+	"github.com/dsandor/feedbackloop/internal/auth"
 	"github.com/dsandor/feedbackloop/internal/logger"
 	"github.com/dsandor/feedbackloop/internal/proxy"
 	"github.com/dsandor/feedbackloop/internal/ui"
@@ -237,7 +238,29 @@ func main() {
 			exitCode = 1
 		}
 	case "http":
-		if err := runHTTPMode(ctx, pool, log, *httpHost, *httpPort, sharedToolCache); err != nil {
+		// Build OAuth config from settings (if configured).
+		oauthCfg := auth.Config{}
+		if cfg.Settings != nil && cfg.Settings.OAuth != nil {
+			o := cfg.Settings.OAuth
+			oauthCfg = auth.Config{
+				Enabled:            o.Enabled,
+				Mode:               o.Mode,
+				Issuer:             o.Issuer,
+				JWKSUri:            o.JWKSUri,
+				Audience:           o.Audience,
+				RequiredScopes:     o.RequiredScopes,
+				IntrospectEndpoint: o.IntrospectEndpoint,
+				ClientID:           o.ClientID,
+				ClientSecret:       o.ClientSecret,
+			}
+		}
+		if oauthCfg.Enabled {
+			log.LogEvent("oauth_enabled", "main", map[string]interface{}{
+				"mode":   oauthCfg.Mode,
+				"issuer": oauthCfg.Issuer,
+			})
+		}
+		if err := runHTTPMode(ctx, pool, log, *httpHost, *httpPort, sharedToolCache, oauthCfg); err != nil {
 			log.LogErrorEvent("http_mode_error", "main", map[string]interface{}{
 				"error": err.Error(),
 			})
@@ -274,7 +297,7 @@ func runStdioMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Log
 	return proxyServer.Run(ctx, stdioTransport)
 }
 
-func runHTTPMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Logger, host string, port int, sharedCache *proxy.ToolCache) error {
+func runHTTPMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Logger, host string, port int, sharedCache *proxy.ToolCache, oauthCfg auth.Config) error {
 	// Create SSE handler with getServer function
 	sseHandler := mcp.NewSSEHandler(func(req *http.Request) *mcp.Server {
 		// Extract client metadata from HTTP request
@@ -304,11 +327,15 @@ func runHTTPMode(ctx context.Context, pool *proxy.UpstreamPool, log *logger.Logg
 		return proxyServer.GetServer()
 	}, &mcp.SSEOptions{})
 
+	// Wrap with OAuth middleware (no-op when disabled).
+	var handler http.Handler = sseHandler
+	handler = auth.Middleware(oauthCfg, handler)
+
 	// Create HTTP server
 	addr := fmt.Sprintf("%s:%d", host, port)
 	httpServer := &http.Server{
 		Addr:    addr,
-		Handler: sseHandler,
+		Handler: handler,
 	}
 
 	// Start server in goroutine
